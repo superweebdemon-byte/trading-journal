@@ -83,10 +83,10 @@ export default async function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <div className="text-center">
-          <p style={{ color: '#6E7681', fontSize: '14px', fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p style={{ color: 'var(--color-text-tertiary)', fontSize: '14px', fontFamily: "'Space Grotesk', sans-serif" }}>
             No trades yet
           </p>
-          <p style={{ color: '#6E7681', fontSize: '11px', marginTop: '4px' }}>
+          <p style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', marginTop: '4px' }}>
             Import a CSV to see your dashboard
           </p>
         </div>

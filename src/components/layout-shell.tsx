@@ -25,13 +25,8 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const [lastImport, setLastImport] = useState<string>('')
 
   const handleAddTradeOpen = useCallback(() => setAddTradeOpen(true), [])
-  const handleAddTradeClose = useCallback(() => {
-    setAddTradeOpen(false)
-    // Refresh stats after import closes
-    fetchStats()
-  }, [])
 
-  async function fetchStats() {
+  const fetchStats = useCallback(async () => {
     try {
       const supabase = createClient()
 
@@ -78,12 +73,19 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     } catch {
       // Non-critical — nav/footer will show defaults
     }
-  }
+  }, [])
 
-  useEffect(() => { fetchStats() }, [])
+  const handleAddTradeClose = useCallback(() => {
+    setAddTradeOpen(false)
+    // Refresh stats after import closes
+    fetchStats()
+  }, [fetchStats])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data fetch on mount
+  useEffect(() => { fetchStats() }, [fetchStats])
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#0D1117' }}>
+    <div className="flex flex-col h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <Nav
         onAddTradeClick={handleAddTradeOpen}
         tradeCount={tradeCount}

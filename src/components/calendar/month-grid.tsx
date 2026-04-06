@@ -114,8 +114,8 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
     <div
       className=""
       style={{
-        background: 'rgba(92,92,122,0.06)',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'rgba(92,92,122,0.06)' /* TODO: needs opacity variant of --color-border */,
+        border: '1px solid var(--color-border)',
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr) 140px',
         gridTemplateRows: `auto repeat(${weekCount}, 1fr)`,
@@ -124,14 +124,14 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
       }}
     >
       {/* Day headers */}
-      {DAY_HEADERS.map((d, i) => (
+      {DAY_HEADERS.map((d) => (
         <div
           key={d}
           className="text-center uppercase tracking-wider font-medium"
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: 11,
-            color: '#6E7681',
+            color: 'var(--color-text-tertiary)',
             letterSpacing: '0.06em',
             padding: '6px 0',
             borderLeft: undefined,

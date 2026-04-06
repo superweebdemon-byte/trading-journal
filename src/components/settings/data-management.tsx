@@ -172,7 +172,7 @@ export function DataManagement() {
           <div>
             <div
               className="font-[family-name:var(--font-display)] text-[11px] font-semibold"
-              style={{ color: '#EF4444' }}
+              style={{ color: 'var(--color-loss)' }}
             >
               Clear All Data
             </div>
@@ -191,7 +191,7 @@ export function DataManagement() {
               border: confirming
                 ? '1px solid rgba(239,68,68,0.40)'
                 : '1px solid rgba(239,68,68,0.25)',
-              color: '#EF4444',
+              color: 'var(--color-loss)',
             }}
           >
             {clearing ? 'Clearing...' : confirming ? 'Confirm Delete' : 'Clear All Data'}

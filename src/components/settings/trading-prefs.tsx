@@ -218,7 +218,7 @@ export function TradingPrefs({ settings, onUpdate }: TradingPrefsProps) {
               style={{
                 width: 14,
                 height: 14,
-                background: settings.pnl_display === 'net' ? '#00D4AA' : '#6E7681',
+                background: settings.pnl_display === 'net' ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
                 position: 'absolute',
                 top: 2,
                 left: settings.pnl_display === 'net' ? 18 : 2,

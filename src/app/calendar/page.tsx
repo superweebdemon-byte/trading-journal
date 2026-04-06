@@ -101,7 +101,7 @@ export default function CalendarPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
-        <p className="text-sm" style={{ color: '#6E7681' }}>Loading calendar...</p>
+        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Loading calendar...</p>
       </div>
     )
   }

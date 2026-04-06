@@ -34,7 +34,7 @@ function ToggleSwitch({
         style={{
           width: 14,
           height: 14,
-          background: on ? '#00D4AA' : '#6E7681',
+          background: on ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
           position: 'absolute',
           top: 2,
           left: on ? 18 : 2,
