@@ -1,0 +1,172 @@
+'use client'
+
+// TEMPLATE: Rename to match the context (e.g. KpiStatRow, SessionStatRow).
+// Use this for compact label/value pairs inside cards or panels.
+
+import React from 'react'
+
+// TEMPLATE: Adjust to match the values your stats display.
+interface StatRowProps {
+  // The metric name — rendered uppercase mono in tertiary color.
+  label: string
+  // Primary display value (string so caller controls formatting).
+  // TEMPLATE: Format before passing: "$1,234", "67.3%", "10m 51s", etc.
+  value: string
+  // TEMPLATE: Optional — delta text shown after the value.
+  //           E.g. "+2.4%" or "–$120". Caller formats the sign.
+  delta?: string
+  // TEMPLATE: Optional — whether the delta is a gain or loss.
+  //           Drives color: gain → var(--color-gain), loss → var(--color-loss).
+  //           Omit to show delta in neutral tertiary color.
+  deltaSign?: 'gain' | 'loss' | 'neutral'
+  // TEMPLATE: Optional — override value color (defaults to text-primary).
+  //           Pass 'var(--color-gain)' / 'var(--color-loss)' for P&L values.
+  valueColor?: string
+  // TEMPLATE: Optional — render a divider below this row.
+  divider?: boolean
+}
+
+// TEMPLATE: Export with the real component name once renamed.
+export function StatRow({
+  label,
+  value,
+  delta,
+  deltaSign = 'neutral',
+  valueColor = 'var(--color-text-primary)',
+  divider = false,
+}: StatRowProps) {
+  const deltaColor =
+    deltaSign === 'gain'
+      ? 'var(--color-gain)'
+      : deltaSign === 'loss'
+        ? 'var(--color-loss)'
+        : 'var(--color-text-tertiary)'
+
+  return (
+    <>
+      <div className="flex items-baseline justify-between gap-3 py-1.5">
+        {/* ── Label ─────────────────────────────────────────────────────── */}
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '10px',
+            fontWeight: 500,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--color-text-tertiary)',
+            // TEMPLATE: Remove whiteSpace if labels are long and should wrap.
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {label}
+        </span>
+
+        {/* ── Value + delta ──────────────────────────────────────────────── */}
+        <div className="flex items-baseline gap-1.5">
+          <span
+            className="tabular-nums"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: valueColor,
+              // TEMPLATE: Adjust font size for hero stats (e.g. '1.25rem') or
+              //           smaller context values (e.g. '11px').
+            }}
+          >
+            {value}
+          </span>
+
+          {/* Optional delta badge */}
+          {delta !== undefined && (
+            <span
+              className="tabular-nums"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '10px',
+                fontWeight: 500,
+                color: deltaColor,
+              }}
+            >
+              {delta}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Optional divider between rows */}
+      {divider && (
+        <div style={{ borderTop: '1px solid var(--color-border)' }} />
+      )}
+    </>
+  )
+}
+
+// ── Convenience wrapper: renders a list of stat rows ───────────────────────────
+// TEMPLATE: Use StatRowList to avoid boilerplate when rendering many rows.
+
+interface StatItem {
+  label: string
+  value: string
+  delta?: string
+  deltaSign?: 'gain' | 'loss' | 'neutral'
+  valueColor?: string
+}
+
+interface StatRowListProps {
+  stats: StatItem[]
+  // TEMPLATE: Set true to put a divider after every row.
+  dividers?: boolean
+  className?: string
+}
+
+export function StatRowList({ stats, dividers = false, className }: StatRowListProps) {
+  return (
+    <div className={className}>
+      {stats.map((s, i) => (
+        <StatRow
+          key={s.label}
+          label={s.label}
+          value={s.value}
+          delta={s.delta}
+          deltaSign={s.deltaSign}
+          valueColor={s.valueColor}
+          // Only draw a divider between rows, not after the last one
+          divider={dividers && i < stats.length - 1}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ── Usage examples ─────────────────────────────────────────────────────────────
+//
+// Single row:
+//
+//   import { StatRow } from '@/components/stat-row'
+//
+//   <StatRow
+//     label="Net P&L"
+//     value="+$4,200"
+//     delta="+12.3%"
+//     deltaSign="gain"
+//     valueColor="var(--color-gain)"
+//   />
+//
+// Row list inside a DashboardCard:
+//
+//   import { StatRowList } from '@/components/stat-row'
+//
+//   const stats = [
+//     { label: 'Win Rate', value: '67.3%' },
+//     { label: 'Profit Factor', value: '2.14x' },
+//     {
+//       label: 'Max Drawdown',
+//       value: '-$640',
+//       delta: '-3.2%',
+//       deltaSign: 'loss',
+//       valueColor: 'var(--color-loss)',
+//     },
+//   ]
+//
+//   <StatRowList stats={stats} dividers />

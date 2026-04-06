@@ -1,0 +1,97 @@
+'use client'
+
+// TEMPLATE: Rename component and file to match your card's purpose.
+// Example: EquityCurveCard, SessionSummaryCard, etc.
+
+import React from 'react'
+
+// TEMPLATE: Define the props your card needs. Remove unused ones.
+interface DashboardCardProps {
+  // TEMPLATE: Required — drives the header label (e.g. "Equity Curve", "Win Rate")
+  label: string
+  // TEMPLATE: Optional — summary value shown on the right of the header (e.g. "+$1,234")
+  summary?: string
+  // TEMPLATE: Optional — color for the summary stat. Defaults to text-primary.
+  //           Use 'var(--color-gain)' or 'var(--color-loss)' for P&L values.
+  summaryColor?: string
+  // TEMPLATE: Slot for the card body content.
+  children: React.ReactNode
+}
+
+// TEMPLATE: Export with the real component name once renamed.
+export function DashboardCard({
+  label,
+  summary,
+  summaryColor = 'var(--color-text-primary)',
+  children,
+}: DashboardCardProps) {
+  return (
+    <div
+      // TEMPLATE: Adjust rounding via --card-radius or a fixed value.
+      className="flex flex-col overflow-hidden"
+      style={{
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--card-radius, 6px)',
+      }}
+    >
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        {/* Left: section label — uppercase mono, tertiary color */}
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '10px',
+            fontWeight: 500,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--color-text-tertiary)',
+          }}
+        >
+          {/* TEMPLATE: Replace with a static string if label never changes. */}
+          {label}
+        </span>
+
+        {/* Right: optional summary stat */}
+        {summary !== undefined && (
+          <span
+            className="tabular-nums"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: summaryColor,
+            }}
+          >
+            {summary}
+          </span>
+        )}
+      </div>
+
+      {/* ── Divider ───────────────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid var(--color-border)' }} />
+
+      {/* ── Body ──────────────────────────────────────────────────────── */}
+      {/*
+        TEMPLATE: Drop your chart, table, list, or stats block here.
+        The card is a flex column — add `flex-1` to a child to fill remaining height.
+        Default padding: px-4 pb-3. Adjust or remove as needed.
+      */}
+      <div className="px-4 pb-3 pt-3 flex-1 min-h-0">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// ── Usage example ──────────────────────────────────────────────────────────────
+//
+// import { DashboardCard } from '@/components/dashboard/dashboard-card'
+//
+// <DashboardCard
+//   label="Monthly P&L"
+//   summary="+$4,200"
+//   summaryColor="var(--color-gain)"
+// >
+//   <MonthlyChart data={data} />
+// </DashboardCard>

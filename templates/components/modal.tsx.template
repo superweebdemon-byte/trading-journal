@@ -1,0 +1,244 @@
+'use client'
+
+// TEMPLATE: Rename to match the modal's purpose (e.g. TradeDetailModal, ImportModal).
+
+import React, { useEffect, useCallback } from 'react'
+
+// TEMPLATE: Adjust props for your use case. Add data props as needed.
+interface ModalProps {
+  // Controls visibility — managed by parent state.
+  open: boolean
+  onClose: () => void
+  // TEMPLATE: Customize the header title.
+  title: string
+  // TEMPLATE: Modal body content slot.
+  children: React.ReactNode
+  // TEMPLATE: Optional footer actions. If omitted, footer is hidden.
+  footer?: React.ReactNode
+  // TEMPLATE: Optional max-width override. Defaults to 480px.
+  maxWidth?: number | string
+}
+
+// TEMPLATE: Export with the real component name once renamed.
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  maxWidth = 480,
+}: ModalProps) {
+  // Close on Escape key
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    },
+    [onClose],
+  )
+
+  useEffect(() => {
+    if (!open) return
+    document.addEventListener('keydown', handleKeyDown)
+    // Prevent background scroll while modal is open
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [open, handleKeyDown])
+
+  if (!open) return null
+
+  return (
+    // ── Backdrop ──────────────────────────────────────────────────────────────
+    <div
+      // TEMPLATE: Increase z-index if stacking above other overlays.
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0, 0, 0, 0.65)' }}
+      // Click backdrop to close
+      onPointerDown={onClose}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+    >
+      {/* ── Dialog panel ──────────────────────────────────────────────────── */}
+      <div
+        className="flex flex-col w-full overflow-hidden"
+        style={{
+          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+          // TEMPLATE: Adjust max height if the body can overflow.
+          maxHeight: 'calc(100vh - 48px)',
+          background: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--card-radius, 8px)',
+          // Prevent backdrop click from propagating through the panel
+        }}
+        // Stop propagation so clicking inside the dialog doesn't close it
+        onPointerDown={e => e.stopPropagation()}
+      >
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-4 pt-3 pb-3 flex-shrink-0"
+          style={{ borderBottom: '1px solid var(--color-border)' }}
+        >
+          <span
+            id="modal-title"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              fontWeight: 500,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-tertiary)',
+            }}
+          >
+            {title}
+          </span>
+
+          {/* Close button */}
+          <button
+            type="button"
+            onPointerDown={onClose}
+            aria-label="Close modal"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 24,
+              height: 24,
+              background: 'transparent',
+              border: 'none',
+              borderRadius: 4,
+              color: 'var(--color-text-tertiary)',
+              cursor: 'pointer',
+              // TEMPLATE: Add hover style via CSS class or inline onMouseEnter/Leave.
+            }}
+          >
+            {/* ✕ close icon — swap for an icon component if your project uses one */}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <path
+                d="M1 1l12 12M13 1L1 13"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* ── Body ────────────────────────────────────────────────────────── */}
+        {/*
+          TEMPLATE: Add overflow-y-auto here if the body content can overflow.
+          Keep px-4 py-4 padding consistent with card conventions.
+        */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto px-4 py-4"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {children}
+        </div>
+
+        {/* ── Footer ──────────────────────────────────────────────────────── */}
+        {/*
+          TEMPLATE: Pass action buttons as the `footer` prop:
+            footer={
+              <>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={handleSave}>Save</button>
+              </>
+            }
+          Remove this block entirely if your modal has no footer actions.
+        */}
+        {footer !== undefined && (
+          <div
+            className="flex items-center justify-end gap-2 px-4 pb-3 pt-3 flex-shrink-0"
+            style={{ borderTop: '1px solid var(--color-border)' }}
+          >
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Reusable action button helpers ─────────────────────────────────────────────
+// TEMPLATE: Import and use these in your footer prop, or replace with your own.
+
+interface ModalButtonProps {
+  onClick: () => void
+  children: React.ReactNode
+  disabled?: boolean
+}
+
+/** Primary action button (accent colored). */
+export function ModalPrimaryButton({ onClick, children, disabled }: ModalButtonProps) {
+  return (
+    <button
+      type="button"
+      onPointerDown={onClick}
+      disabled={disabled}
+      style={{
+        padding: '6px 14px',
+        borderRadius: 'var(--card-radius, 6px)',
+        border: 'none',
+        background: disabled ? 'var(--color-accent-muted)' : 'var(--color-accent)',
+        color: 'var(--color-bg-primary)',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '11px',
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+/** Secondary/cancel button (bordered ghost style). */
+export function ModalSecondaryButton({ onClick, children, disabled }: ModalButtonProps) {
+  return (
+    <button
+      type="button"
+      onPointerDown={onClick}
+      disabled={disabled}
+      style={{
+        padding: '6px 14px',
+        borderRadius: 'var(--card-radius, 6px)',
+        border: '1px solid var(--color-border)',
+        background: 'transparent',
+        color: 'var(--color-text-secondary)',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '11px',
+        fontWeight: 500,
+        letterSpacing: '0.08em',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ── Usage example ──────────────────────────────────────────────────────────────
+//
+// import { Modal, ModalPrimaryButton, ModalSecondaryButton } from '@/components/modal'
+//
+// const [open, setOpen] = useState(false)
+//
+// <Modal
+//   open={open}
+//   onClose={() => setOpen(false)}
+//   title="Trade Detail"
+//   footer={
+//     <>
+//       <ModalSecondaryButton onClick={() => setOpen(false)}>Cancel</ModalSecondaryButton>
+//       <ModalPrimaryButton onClick={handleSave}>Save</ModalPrimaryButton>
+//     </>
+//   }
+// >
+//   <TradeDetailForm trade={selectedTrade} />
+// </Modal>

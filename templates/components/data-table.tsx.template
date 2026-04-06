@@ -1,0 +1,240 @@
+'use client'
+
+// TEMPLATE: Rename to match the data being displayed (e.g. TradeLogTable, SessionTable).
+
+import React, { useState } from 'react'
+
+// TEMPLATE: Replace with the actual row shape. Add/remove fields as needed.
+interface RowData {
+  id: string
+  // TEMPLATE: Example text column
+  label: string
+  // TEMPLATE: Example numeric column (tabular-nums)
+  value: number
+  // TEMPLATE: P&L column — will be gain/loss colored
+  pnl: number
+}
+
+// TEMPLATE: Define the columns the table renders.
+// key must match a field on RowData. numeric: true → right-aligned tabular-nums.
+// pnl: true → gain/loss color applied automatically.
+interface ColumnDef<T> {
+  key: keyof T
+  header: string
+  numeric?: boolean
+  pnl?: boolean
+  // TEMPLATE: Optional custom cell renderer — overrides numeric/pnl formatting.
+  render?: (value: T[keyof T], row: T) => React.ReactNode
+}
+
+// TEMPLATE: Define your column list here, then pass to DataTable below.
+const COLUMNS: ColumnDef<RowData>[] = [
+  { key: 'label', header: 'Name' },
+  { key: 'value', header: 'Value', numeric: true },
+  { key: 'pnl', header: 'P&L', numeric: true, pnl: true },
+]
+
+// TEMPLATE: Adjust props — rows source, optional loading state, className.
+interface DataTableProps {
+  rows: RowData[]
+  // TEMPLATE: Optional — show a skeleton/empty state while fetching.
+  loading?: boolean
+  className?: string
+}
+
+// TEMPLATE: Export with the real component name once renamed.
+export function DataTable({ rows, loading = false, className }: DataTableProps) {
+  // TEMPLATE: Replace initial sort key with the default column to sort by.
+  const [sortKey, setSortKey] = useState<keyof RowData>('pnl')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  function handleSort(key: keyof RowData) {
+    if (key === sortKey) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+  }
+
+  const sorted = [...rows].sort((a, b) => {
+    const av = a[sortKey]
+    const bv = b[sortKey]
+    if (av === bv) return 0
+    const gt = av > bv ? 1 : -1
+    return sortDir === 'asc' ? gt : -gt
+  })
+
+  return (
+    <div
+      className={`overflow-hidden ${className ?? ''}`}
+      style={{
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--card-radius, 6px)',
+      }}
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          {/* ── Column headers ─────────────────────────────────────────── */}
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+              {COLUMNS.map(col => (
+                <th
+                  key={String(col.key)}
+                  onClick={() => handleSort(col.key)}
+                  className={`px-3 py-2 select-none cursor-pointer ${col.numeric ? 'text-right' : 'text-left'}`}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    fontWeight: 500,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: sortKey === col.key
+                      ? 'var(--color-text-secondary)'
+                      : 'var(--color-text-tertiary)',
+                    background: 'var(--color-bg-secondary)',
+                    // TEMPLATE: Remove whiteSpace if header text should wrap.
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {col.header}
+                  {/* Sort indicator */}
+                  {sortKey === col.key && (
+                    <span style={{ marginLeft: 4, opacity: 0.6 }}>
+                      {sortDir === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          {/* ── Body ────────────────────────────────────────────────────── */}
+          <tbody>
+            {loading ? (
+              // TEMPLATE: Replace with a proper skeleton if desired.
+              <tr>
+                <td
+                  colSpan={COLUMNS.length}
+                  className="px-3 py-6 text-center"
+                  style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}
+                >
+                  Loading…
+                </td>
+              </tr>
+            ) : sorted.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={COLUMNS.length}
+                  className="px-3 py-6 text-center"
+                  style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}
+                >
+                  {/* TEMPLATE: Customize empty message. */}
+                  No data
+                </td>
+              </tr>
+            ) : (
+              sorted.map((row, i) => (
+                <tr
+                  key={row.id}
+                  style={{
+                    // Alternating subtle row background
+                    background: i % 2 === 0
+                      ? 'var(--color-bg-tertiary)'
+                      : 'var(--color-bg-secondary)',
+                    borderBottom: '1px solid var(--color-border)',
+                    // TEMPLATE: Add a hover highlight via CSS class if needed.
+                  }}
+                >
+                  {COLUMNS.map(col => {
+                    const raw = row[col.key]
+
+                    // Custom renderer takes priority
+                    if (col.render) {
+                      return (
+                        <td
+                          key={String(col.key)}
+                          className={`px-3 py-2 ${col.numeric ? 'text-right' : ''}`}
+                          style={{ fontSize: '12px', color: 'var(--color-text-primary)' }}
+                        >
+                          {col.render(raw, row)}
+                        </td>
+                      )
+                    }
+
+                    // P&L column: gain/loss color + +/- prefix
+                    if (col.pnl && typeof raw === 'number') {
+                      const isGain = raw >= 0
+                      return (
+                        <td
+                          key={String(col.key)}
+                          className="px-3 py-2 text-right tabular-nums"
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: isGain ? 'var(--color-gain)' : 'var(--color-loss)',
+                          }}
+                        >
+                          {isGain ? '+' : ''}
+                          {raw.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                      )
+                    }
+
+                    // Numeric column: right-aligned, tabular-nums
+                    if (col.numeric) {
+                      return (
+                        <td
+                          key={String(col.key)}
+                          className="px-3 py-2 text-right tabular-nums"
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '12px',
+                            color: 'var(--color-text-primary)',
+                          }}
+                        >
+                          {typeof raw === 'number'
+                            ? raw.toLocaleString('en-US')
+                            : String(raw)}
+                        </td>
+                      )
+                    }
+
+                    // Default: text column
+                    return (
+                      <td
+                        key={String(col.key)}
+                        className="px-3 py-2"
+                        style={{ fontSize: '12px', color: 'var(--color-text-primary)' }}
+                      >
+                        {String(raw)}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ── Usage example ──────────────────────────────────────────────────────────────
+//
+// import { DataTable } from '@/components/dashboard/data-table'
+//
+// const rows: RowData[] = trades.map(t => ({
+//   id: t.id,
+//   label: t.contract,
+//   value: t.contracts,
+//   pnl: t.netPnl,
+// }))
+//
+// <DataTable rows={rows} />
