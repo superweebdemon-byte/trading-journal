@@ -119,17 +119,18 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
   const todayKey = toDateKey(now.getFullYear(), now.getMonth(), now.getDate())
 
   return (
-    <div
-      style={{
-        background: 'var(--color-border-subtle)',
-        border: '1px solid var(--color-border)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr) 140px',
-        gridTemplateRows: 'auto repeat(6, 1fr)',
-        minHeight: '510px',
-        flex: 1,
-      }}
-    >
+    <div className="overflow-x-auto sm:overflow-visible" style={{ flex: 1, minHeight: 0 }}>
+      <div
+        className="min-w-[640px] sm:min-w-0 h-full"
+        style={{
+          background: 'var(--color-border-subtle)',
+          border: '1px solid var(--color-border)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(6, 1fr) 140px',
+          gridTemplateRows: 'auto repeat(6, 1fr)',
+          minHeight: '510px',
+        }}
+      >
       {/* Day headers */}
       {DAY_HEADERS.map((d) => (
         <div
@@ -179,6 +180,7 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
           )
         })
       })}
+      </div>
     </div>
   )
 }
