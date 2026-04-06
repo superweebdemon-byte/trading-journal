@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-theme-bg-primary: var(--color-bg-primary);
+  --color-theme-bg-secondary: var(--color-bg-secondary);
+  --color-theme-bg-tertiary: var(--color-bg-tertiary);
+  --color-theme-bg-card: var(--color-bg-card);
+  --color-theme-border: var(--color-border);
+  --color-theme-text-primary: var(--color-text-primary);
+  --color-theme-text-secondary: var(--color-text-secondary);
+  --color-theme-text-tertiary: var(--color-text-tertiary);
+  --color-theme-accent: var(--color-accent);
+  --color-theme-accent-bright: var(--color-accent-bright);
+  --color-theme-accent-muted: var(--color-accent-muted);
+  --color-theme-gain: var(--color-gain);
+  --color-theme-gain-bright: var(--color-gain-bright);
+  --color-theme-gain-bg: var(--color-gain-bg);
+  --color-theme-loss: var(--color-loss);
+  --color-theme-loss-bright: var(--color-loss-bright);
+  --color-theme-loss-bg: var(--color-loss-bg);
+  --color-theme-neutral: var(--color-neutral);
+}
+
+/* Default CSS variable values (Split Cockpit) so page renders before JS hydrates */
+:root {
+  --color-bg-primary: #0D1117;
+  --color-bg-secondary: #161B22;
+  --color-bg-tertiary: #0F1218;
+  --color-bg-card: #161B22;
+  --color-border: rgba(92, 92, 122, 0.12);
+  --color-text-primary: #E6EDF3;
+  --color-text-secondary: #8B949E;
+  --color-text-tertiary: #6E7681;
+  --color-accent: #00D4AA;
+  --color-accent-bright: #33DDBB;
+  --color-accent-muted: rgba(0, 212, 170, 0.12);
+  --color-gain: #34D399;
+  --color-gain-bright: #6EE7B7;
+  --color-gain-bg: rgba(52, 211, 153, 0.08);
+  --color-loss: #EF4444;
+  --color-loss-bright: #F87171;
+  --color-loss-bg: rgba(239, 68, 68, 0.08);
+  --color-neutral: #8B949E;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Fira Code', monospace;
+  --font-mono: 'Fira Code', monospace;
+  --card-radius: 6px;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  background: #0D1117;
+  color: #E6EDF3;
+  font-family: 'Fira Code', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numbers for financial data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Calendar cell hover */
+.calendar-cell {
+  transition: border-color 0.15s;
+}
+.calendar-cell:hover {
+  border-color: rgba(0, 212, 170, 0.3) !important;
+}

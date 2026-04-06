@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equity Curve v3 — Trading Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06080C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Sora', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .card {
+    width: 65%;
+    min-width: 620px;
+    max-width: 1100px;
+    background: #141820;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.02),
+      0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* Header — Robinhood style: big balance + change line */
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 22px 0 22px;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .balance-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .balance-number {
+    font-family: 'Sora', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #E8ECF2;
+    transition: color 0.15s ease;
+    /* Smooth digit changes via CSS — actual animation done in JS */
+  }
+
+  .balance-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: #4A5568;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .balance-date.visible {
+    opacity: 1;
+  }
+
+  .change-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: #10B981;
+    margin-top: 2px;
+    transition: color 0.15s ease;
+    min-height: 18px;
+  }
+
+  .change-line.loss { color: #EF4444; }
+  .change-line.gain { color: #10B981; }
+  .change-line.drawdown { color: #EF4444; }
+
+  /* Time range toggle pills */
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 0;
+    margin-top: 4px;
+  }
+
+  .toggle-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: #4A5568;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle-btn:hover {
+    color: #8B95A8;
+  }
+
+  .toggle-btn:focus-visible {
+    outline: 2px solid rgba(45,212,191,0.4);
+    outline-offset: 1px;
+  }
+
+  .toggle-btn.active {
+    background: rgba(45,212,191,0.12);
+    color: #E8ECF2;
+  }
+
+  /* Chart area */
+  .chart-area {
+    position: relative;
+    padding: 4px 12px 10px 12px;
+    height: 380px;
+  }
+
+  #chart-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Color utility classes */
+  .gain { color: #10B981; }
+  .loss { color: #EF4444; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .balance-number, .change-line, .balance-date {
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="header-left">
+      <div class="balance-row">
+        <span class="balance-number" id="balance-number">$53,247</span>
+        <span class="balance-date" id="balance-date"></span>
+      </div>
+      <div class="change-line gain" id="change-line">+$3,247 (6.49%)</div>
+    </div>
+    <div class="toggle-container" role="tablist" aria-label="Time range">
+      <button class="toggle-btn" data-range="1W" role="tab" aria-selected="false">1W</button>
+      <button class="toggle-btn" data-range="1M" role="tab" aria-selected="false">1M</button>
+      <button class="toggle-btn" data-range="3M" role="tab" aria-selected="false">3M</button>
+      <button class="toggle-btn active" data-range="ALL" role="tab" aria-selected="true">ALL</button>
+    </div>
+  </div>
+  <div class="chart-area">
+    <div id="chart-container"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SAMPLE DATA — ~60 trading days, Feb-Apr 2026
+// Account balance style (starts at $50,000)
+// ============================================================
+function generateEquityData() {
+  const data = [];
+  const startingBalance = 50000;
+  let balance = startingBalance;
+  const startDate = new Date(2026, 1, 2); // Feb 2, 2026
+
+  const dailyReturns = [
+    // Feb: choppy start
+    -180, 95, -250, -120, 60,
+    -90, 210, -40, 150, 280,
+    -60, 195, -320, -180, 250,
+    130, -70, 340, -110, 85,
+    // Mar: growth phase with drawdown
+    220, -45, 175, 90, -280,
+    -190, 310, 140, -50, 260,
+    -130, 85, 195, 50, -100,
+    270, -35, 160, 120, -200,
+    // Apr: strong finish
+    310, -70, 230, -25, 145,
+    200, 165, -110, 250, 80,
+    -55, 190, 135, 95, -60,
+    280, -40, 175, 120, -80,
+    210, 150
+  ];
+
+  let tradingDay = 0;
+  for (let i = 0; i < 100; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue;
+    if (tradingDay >= dailyReturns.length) break;
+
+    balance += dailyReturns[tradingDay];
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const timeStr = `${year}-${month}-${day}`;
+
+    data.push({ time: timeStr, value: balance });
+    tradingDay++;
+  }
+
+  return data;
+}
+
+const allData = generateEquityData();
+
+// ============================================================
+// MAX DRAWDOWN — peak to trough
+// ============================================================
+function findMaxDrawdown(data) {
+  let peak = -Infinity;
+  let peakIdx = 0;
+  let maxDD = 0;
+  let troughIdx = 0;
+  let ddPeakIdx = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].value > peak) {
+      peak = data[i].value;
+      peakIdx = i;
+    }
+    const dd = peak - data[i].value;
+    if (dd > maxDD) {
+      maxDD = dd;
+      troughIdx = i;
+      ddPeakIdx = peakIdx;
+    }
+  }
+  return { peakIndex: ddPeakIdx, troughIndex: troughIdx, drawdown: maxDD };
+}
+
+const ddInfo = findMaxDrawdown(allData);
+const ddPeakTime = allData[ddInfo.peakIndex].time;
+const ddTroughTime = allData[ddInfo.troughIndex].time;
+
+// ============================================================
+// CHART CREATION
+// ============================================================
+const container = document.getElementById('chart-container');
+
+const chart = LightweightCharts.createChart(container, {
+  width: container.clientWidth,
+  height: container.clientHeight,
+  layout: {
+    background: { type: 'solid', color: 'transparent' },
+    textColor: '#4A5568',
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontSize: 10,
+    attributionLogo: false,
+  },
+  grid: {
+    vertLines: { visible: false },
+    horzLines: { color: 'rgba(255,255,255,0.04)', style: 0 },
+  },
+  rightPriceScale: {
+    borderVisible: false,
+    scaleMargins: { top: 0.08, bottom: 0.08 },
+  },
+  timeScale: {
+    borderVisible: false,
+    timeVisible: false,
+    rightOffset: 2,
+    fixLeftEdge: true,
+    fixRightEdge: true,
+  },
+  crosshair: {
+    vertLine: {
+      color: 'rgba(45,212,191,0.25)',
+      width: 1,
+      style: 0, // Solid
+      labelVisible: false,
+    },
+    horzLine: {
+      visible: false,
+    },
+  },
+  handleScroll: false,
+  handleScale: false,
+});
+
+// Price formatter for Y-axis — show full dollar amounts
+chart.applyOptions({
+  localization: {
+    priceFormatter: (price) => {
+      return '$' + Math.round(price).toLocaleString('en-US');
+    },
+  },
+});
+
+// ============================================================
+// STATE
+// ============================================================
+let activeRange = 'ALL';
+let currentVisibleData = allData;
+let series = null;
+let referenceLine = null;
+let cachedVisibleDD = null; // cached drawdown for current visible data
+
+// ============================================================
+// DETERMINE LINE COLOR — green if up from period start, red if down
+// ============================================================
+function getPeriodColor(data) {
+  if (data.length < 2) return { up: true, lineColor: '#10B981', fillTop: 'rgba(16,185,129,0.20)', fillBottom: 'rgba(16,185,129,0.02)' };
+  const startVal = data[0].value;
+  const endVal = data[data.length - 1].value;
+  const up = endVal >= startVal;
+  return {
+    up,
+    lineColor: up ? '#10B981' : '#EF4444',
+    fillTop: up ? 'rgba(16,185,129,0.20)' : 'rgba(239,68,68,0.20)',
+    fillBottom: up ? 'rgba(16,185,129,0.02)' : 'rgba(239,68,68,0.02)',
+  };
+}
+
+// ============================================================
+// DRAWDOWN OVERLAY
+// ============================================================
+const ddOverlay = document.createElement('div');
+ddOverlay.style.cssText = `
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 1px solid rgba(239, 68, 68, 0.12);
+  border-right: 1px solid rgba(239, 68, 68, 0.12);
+  z-index: 1;
+  display: none;
+`;
+container.style.position = 'relative';
+container.appendChild(ddOverlay);
+
+function updateDrawdownOverlay(visibleData) {
+  // Recalculate drawdown for visible data
+  const dd = findMaxDrawdown(visibleData);
+  if (dd.drawdown === 0) { ddOverlay.style.display = 'none'; return; }
+
+  const peakTime = visibleData[dd.peakIndex]?.time;
+  const troughTime = visibleData[dd.troughIndex]?.time;
+  if (!peakTime || !troughTime) { ddOverlay.style.display = 'none'; return; }
+
+  const ts = chart.timeScale();
+  const leftCoord = ts.timeToCoordinate(peakTime);
+  const rightCoord = ts.timeToCoordinate(troughTime);
+
+  if (leftCoord === null || rightCoord === null) { ddOverlay.style.display = 'none'; return; }
+
+  ddOverlay.style.left = Math.min(leftCoord, rightCoord) + 'px';
+  ddOverlay.style.width = Math.abs(rightCoord - leftCoord) + 'px';
+  ddOverlay.style.display = 'block';
+}
+
+// ============================================================
+// TIME RANGE FILTERING
+// ============================================================
+function getFilteredData(range) {
+  if (range === 'ALL') return allData;
+
+  const lastDate = new Date(allData[allData.length - 1].time);
+  let daysBack;
+  switch (range) {
+    case '1W': daysBack = 7; break;
+    case '1M': daysBack = 30; break;
+    case '3M': daysBack = 90; break;
+    default: return allData;
+  }
+
+  const cutoff = new Date(lastDate);
+  cutoff.setDate(cutoff.getDate() - daysBack);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  return allData.filter(d => d.time >= cutoffStr);
+}
+
+// ============================================================
+// UPDATE CHART — rebuilds series with correct color for period
+// ============================================================
+function updateChart(range) {
+  const data = getFilteredData(range);
+  currentVisibleData = data;
+  cachedVisibleDD = findMaxDrawdown(data);
+
+  const colors = getPeriodColor(data);
+
+  // Remove old series if it exists
+  if (series) {
+    chart.removeSeries(series);
+  }
+
+  // AreaSeries gives us line + gradient fill in one series
+  series = chart.addSeries(LightweightCharts.AreaSeries, {
+    lineColor: colors.lineColor,
+    lineWidth: 2,
+    topColor: colors.fillTop,
+    bottomColor: colors.fillBottom,
+    lastValueVisible: false,
+    priceLineVisible: false,
+    crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
+    crosshairMarkerBorderColor: colors.lineColor,
+    crosshairMarkerBackgroundColor: '#141820',
+    crosshairMarkerBorderWidth: 2,
+  });
+
+  series.setData(data);
+
+  // Period reference line (starting balance of this range)
+  if (data.length > 0) {
+    series.createPriceLine({
+      price: data[0].value,
+      color: 'rgba(255,255,255,0.06)',
+      lineWidth: 1,
+      lineStyle: 2, // Dashed
+      axisLabelVisible: false,
+    });
+  }
+
+  chart.timeScale().fitContent();
+
+  // Update header to show current (latest) values
+  updateHeaderDefault();
+
+  // Update drawdown overlay
+  requestAnimationFrame(() => updateDrawdownOverlay(data));
+}
+
+// ============================================================
+// HEADER — Robinhood-style balance display
+// ============================================================
+const balanceEl = document.getElementById('balance-number');
+const dateEl = document.getElementById('balance-date');
+const changeEl = document.getElementById('change-line');
+
+let animationFrame = null;
+let currentDisplayedBalance = 0;
+
+function formatBalance(val) {
+  return '$' + Math.round(val).toLocaleString('en-US');
+}
+
+function formatChange(startVal, endVal) {
+  const delta = endVal - startVal;
+  const pct = ((delta / startVal) * 100).toFixed(2);
+  const sign = delta >= 0 ? '+' : '-';
+  const absDelta = Math.abs(Math.round(delta));
+  return `${sign}$${absDelta.toLocaleString('en-US')} (${sign}${Math.abs(pct)}%)`;
+}
+
+function formatDate(timeStr) {
+  const d = new Date(timeStr + 'T00:00:00');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+// Smooth counter animation
+function animateBalance(targetValue) {
+  const startValue = currentDisplayedBalance;
+  const diff = targetValue - startValue;
+
+  // If very small change, just set it
+  if (Math.abs(diff) < 2) {
+    currentDisplayedBalance = targetValue;
+    balanceEl.textContent = formatBalance(targetValue);
+    return;
+  }
+
+  const duration = 120; // ms — fast, responsive
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out quad
+    const eased = 1 - (1 - progress) * (1 - progress);
+    const current = startValue + diff * eased;
+    currentDisplayedBalance = current;
+    balanceEl.textContent = formatBalance(current);
+
+    if (progress < 1) {
+      animationFrame = requestAnimationFrame(step);
+    } else {
+      currentDisplayedBalance = targetValue;
+      balanceEl.textContent = formatBalance(targetValue);
+    }
+  }
+
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  animationFrame = requestAnimationFrame(step);
+}
+
+function updateHeaderDefault() {
+  if (currentVisibleData.length === 0) return;
+
+  const startVal = currentVisibleData[0].value;
+  const endVal = currentVisibleData[currentVisibleData.length - 1].value;
+  const delta = endVal - startVal;
+  const up = delta >= 0;
+
+  animateBalance(endVal);
+  changeEl.textContent = formatChange(startVal, endVal);
+  changeEl.className = 'change-line ' + (up ? 'gain' : 'loss');
+  dateEl.classList.remove('visible');
+}
+
+// ============================================================
+// CROSSHAIR — header acts as tooltip (Robinhood pattern)
+// ============================================================
+chart.subscribeCrosshairMove((param) => {
+  if (!param.point || !param.time || param.point.x < 0 || param.point.y < 0) {
+    // Mouse left chart — snap back to current
+    updateHeaderDefault();
+    return;
+  }
+
+  const seriesData = param.seriesData.get(series);
+  if (!seriesData) {
+    updateHeaderDefault();
+    return;
+  }
+
+  const value = seriesData.value;
+  const time = param.time;
+  const startVal = currentVisibleData[0].value;
+  const delta = value - startVal;
+  const up = delta >= 0;
+
+  // Update balance with animation
+  animateBalance(value);
+
+  // Show date
+  dateEl.textContent = formatDate(time);
+  dateEl.classList.add('visible');
+
+  // Check if in drawdown zone (uses cached calculation)
+  const visDD = cachedVisibleDD;
+  const visDDPeakTime = currentVisibleData[visDD.peakIndex]?.time;
+  const visDDTroughTime = currentVisibleData[visDD.troughIndex]?.time;
+
+  if (visDD.drawdown > 0 && time >= visDDPeakTime && time <= visDDTroughTime) {
+    // In max drawdown region
+    changeEl.textContent = 'Max DD: -$' + Math.round(visDD.drawdown).toLocaleString('en-US');
+    changeEl.className = 'change-line drawdown';
+  } else {
+    // Normal change from period start
+    changeEl.textContent = formatChange(startVal, value);
+    changeEl.className = 'change-line ' + (up ? 'gain' : 'loss');
+  }
+});
+
+// ============================================================
+// Initialize
+// ============================================================
+updateChart('ALL');
+// Set initial displayed balance
+currentDisplayedBalance = currentVisibleData[currentVisibleData.length - 1].value;
+
+// ============================================================
+// TIME RANGE TOGGLE
+// ============================================================
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    const range = btn.dataset.range;
+    activeRange = range;
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    updateChart(range);
+  });
+});
+
+// ============================================================
+// RESIZE OBSERVER
+// ============================================================
+const resizeObserver = new ResizeObserver(entries => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    chart.applyOptions({ width, height });
+    requestAnimationFrame(() => updateDrawdownOverlay(currentVisibleData));
+  }
+});
+resizeObserver.observe(container);
+</script>
+
+</body>
+</html>

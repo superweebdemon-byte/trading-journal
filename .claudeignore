@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+out/
+build/
+tsconfig.tsbuildinfo
+
+# Lock files
+package-lock.json
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Supabase local
+supabase/.temp/
+
+# Test output
+coverage/
+
+# Mockup screenshots (large binaries)
+mockup-screenshots/
+
+# Stage output artifacts
+stages/*/output/

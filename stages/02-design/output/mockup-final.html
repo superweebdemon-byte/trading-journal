@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: {
+              DEFAULT: '#0D1117',
+              50: '#0D1117',
+              100: '#161B22',
+              150: '#131920',
+              200: '#161B22',
+              300: '#21262D',
+              400: '#262C36',
+              500: '#2D333B',
+              600: '#3D444D',
+              700: '#484F58',
+            },
+            neon: {
+              DEFAULT: '#00D4AA',
+              bright: '#33DDBB',
+              dim: '#00B894',
+              muted: '#009D7E',
+              subtle: 'rgba(0,212,170,0.12)',
+              ring: 'rgba(224, 64, 251, 0.20)',
+            },
+            cyan: {
+              DEFAULT: '#00E5FF',
+              dim: '#00B8D4',
+            },
+            gain: {
+              DEFAULT: '#34D399',
+              bright: '#6EE7B7',
+              dim: '#10B981',
+              bg: 'rgba(0, 230, 118, 0.06)',
+              bar: 'rgba(0, 230, 118, 0.75)',
+            },
+            loss: {
+              DEFAULT: '#EF4444',
+              bright: '#F87171',
+              dim: '#DC2626',
+              bg: 'rgba(255, 23, 68, 0.06)',
+              bar: 'rgba(255, 23, 68, 0.75)',
+            },
+            flat: {
+              DEFAULT: '#6E7681',
+              bg: 'rgba(92, 92, 122, 0.10)',
+            },
+            label: {
+              primary: '#E6EDF3',
+              secondary: '#8B949E',
+              tertiary: '#6E7681',
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Fira Code', monospace;
+      -webkit-font-smoothing: antialiased;
+      background: #0D1117;
+      color: #E6EDF3;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    .tile {
+      background: #161B22;
+      border: 1px solid rgba(92, 92, 122, 0.12);
+      border-radius: 6px;
+    }
+
+    .tile-header {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6E7681;
+    }
+
+    .gain-text { color: #34D399; }
+    .loss-text { color: #EF4444; }
+    .neon-text { color: #00D4AA; }
+    .warn-text { color: #FFD600; }
+
+    /* Equity curve animation */
+    .equity-path {
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      animation: drawLine 2s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Bar animations */
+    .bar { border-radius: 2px 2px 0 0; transition: opacity 0.15s ease; }
+    .bar:hover { opacity: 1 !important; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #21262D; border-radius: 2px; }
+
+    /* Session row hover */
+    .session-row { transition: background 0.15s ease; }
+    .session-row:hover { background: rgba(92, 92, 122, 0.04); }
+
+    /* Pill tags */
+    .pill {
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px; border-radius: 2px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    /* Donut */
+    .donut-track { fill: none; stroke: #21262D; }
+    .donut-gain { fill: none; stroke: #34D399; stroke-linecap: round; }
+    .donut-loss { fill: none; stroke: #EF4444; stroke-linecap: round; }
+
+    /* Month cards */
+    .month-card { transition: background 0.15s ease, transform 0.1s ease; }
+    .month-card:hover { transform: translateX(2px); }
+
+    /* Nav link */
+    .nav-link { color: #6E7681; font-size: 12px; letter-spacing: 0.02em; cursor: pointer; transition: color 0.15s; }
+    .nav-link:hover { color: #8B949E; }
+    .nav-link.active { color: #E6EDF3; background: rgba(0,212,170,0.12); padding: 4px 10px; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP NAV -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background: rgba(13,17,23,0.95);">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link active">Dashboard</span>
+        <span class="nav-link px-2.5 py-1">Calendar</span>
+        <span class="nav-link px-2.5 py-1">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>TOPSTEP X</span>
+        <span class="text-void-500">|</span>
+        <span>84 trades</span>
+        <span class="text-void-500">|</span>
+        <span>Nov 2025 – Mar 2026</span>
+      </div>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;cursor:pointer;">+ Import CSV</button>
+    </div>
+  </header>
+
+  <main class="px-2 pt-1 pb-0.5 w-full max-w-[1280px] mx-auto">
+
+    <!-- ROW 1: KPI RIBBON -->
+    <div class="grid grid-cols-7 gap-1.5 mb-1">
+      <!-- Net P&L — hero tile -->
+      <div class="tile px-3 py-2" style="border-color: rgba(0,212,170,0.20);">
+        <div class="tile-header pb-0.5">Net P&L</div>
+        <div class="font-display text-xl font-bold tabular-nums gain-text leading-tight">+$2,100</div>
+        <div class="text-[10px] text-label-tertiary mt-0.5 tabular-nums">Nov 2025 – Mar 2026</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Win Rate</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">41.7<span class="text-xs text-label-tertiary">%</span></div>
+        <div class="text-[10px] text-label-tertiary mt-0.5 tabular-nums">35W / 49L</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Profit Factor</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">1.38<span class="text-xs text-label-tertiary">x</span></div>
+        <div class="text-[10px] text-label-tertiary mt-0.5 tabular-nums">$7,694 / $5,594</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Avg Win / Loss</div>
+        <div class="flex items-baseline gap-1 leading-tight">
+          <span class="font-display text-lg font-bold tabular-nums gain-text">$220</span>
+          <span class="text-label-tertiary text-xs">/</span>
+          <span class="font-display text-lg font-bold tabular-nums loss-text">$114</span>
+        </div>
+        <div class="text-[10px] text-label-tertiary mt-0.5 tabular-nums">1.93:1 R:R</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Total Trades</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">84</div>
+        <div class="text-[10px] text-label-tertiary mt-0.5 tabular-nums">Best: $400 | Worst: -$214</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Max Drawdown</div>
+        <div class="font-display text-xl font-bold tabular-nums loss-text leading-tight">-$397</div>
+        <div class="text-[10px] text-label-tertiary mt-0.5">Dec 15 session</div>
+      </div>
+      <div class="tile px-3 py-2">
+        <div class="tile-header pb-0.5">Avg Duration</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">18<span class="text-xs text-label-tertiary">m</span></div>
+        <div class="text-[10px] text-label-tertiary mt-0.5">per trade</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: EQUITY CURVE + BEHAVIORAL SIGNALS -->
+    <div class="grid grid-cols-12 gap-1.5 mb-1">
+
+      <!-- EQUITY CURVE — 8 cols -->
+      <div class="tile col-span-8 overflow-hidden flex flex-col" style="max-height: 320px;">
+        <div class="flex items-center justify-between px-3 pt-1.5 pb-0.5">
+          <div class="flex items-center gap-2">
+            <span class="tile-header">Equity Curve</span>
+            <span class="text-[10px] text-label-tertiary ml-1">Cumulative P&L</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] text-label-tertiary px-2 py-0.5 rounded cursor-pointer hover:text-label-secondary">1M</span>
+            <span class="text-[10px] text-label-primary px-2 py-0.5 rounded cursor-pointer" style="background: rgba(0,212,170,0.15);">ALL</span>
+          </div>
+        </div>
+        <div class="px-3 pb-1 flex-1 flex items-stretch">
+          <svg viewBox="0 0 790 230" class="w-full h-full" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <!-- Clip above $0 line (y=155) -->
+              <clipPath id="clipAboveZero">
+                <rect x="45" y="0" width="730" height="155" />
+              </clipPath>
+              <!-- Clip below $0 line (y=155) -->
+              <clipPath id="clipBelowZero">
+                <rect x="45" y="155" width="730" height="75" />
+              </clipPath>
+              <!-- Teal gradient fill (above zero) -->
+              <linearGradient id="eqGradTeal" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00D4AA" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#00D4AA" stop-opacity="0.05"/>
+              </linearGradient>
+              <!-- Red gradient fill (below zero) -->
+              <linearGradient id="eqGradRed" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#EF4444" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#EF4444" stop-opacity="0.05"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Grid lines -->
+            <line x1="45" y1="15" x2="770" y2="15" stroke="#1C2128" stroke-width="0.5"/>
+            <line x1="45" y1="50" x2="770" y2="50" stroke="#1C2128" stroke-width="0.5"/>
+            <line x1="45" y1="85" x2="770" y2="85" stroke="#1C2128" stroke-width="0.5"/>
+            <line x1="45" y1="120" x2="770" y2="120" stroke="#1C2128" stroke-width="0.5"/>
+            <!-- $0 baseline — dashed -->
+            <line x1="45" y1="155" x2="770" y2="155" stroke="#30363D" stroke-width="1" stroke-dasharray="4,3"/>
+            <line x1="45" y1="183" x2="770" y2="183" stroke="#1C2128" stroke-width="0.5"/>
+
+            <!-- Y-axis labels -->
+            <text x="40" y="19" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">$2.5k</text>
+            <text x="40" y="54" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">$2k</text>
+            <text x="40" y="89" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">$1k</text>
+            <text x="40" y="124" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">$500</text>
+            <text x="40" y="159" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">$0</text>
+            <text x="40" y="187" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="end">-$400</text>
+
+            <!-- X-axis labels -->
+            <text x="120" y="210" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="middle">Nov</text>
+            <text x="280" y="210" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="middle">Dec</text>
+            <text x="440" y="210" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="middle">Jan</text>
+            <text x="590" y="210" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="middle">Feb</text>
+            <text x="720" y="210" fill="#6E7681" font-size="9" font-family="Fira Code" text-anchor="middle">Mar</text>
+
+            <!--
+              Smooth cubic bezier curve through data points:
+              Y mapping: $2500→15, $2000→50, $1000→85, $500→120, $0→155, -$400→183
+              Data: Nov1=$265(y≈146), Nov15=$410(y≈131), Dec1=$320(y≈139),
+                    Dec15=-$120(y≈163), Jan1=-$397(y≈180), Jan15=-$180(y≈167),
+                    Feb1=$150(y≈144), Feb15=$620(y≈111), Mar1=$1350(y≈62),
+                    Mar15=$1780(y≈33), Mar31=$2100(y≈42→actually closer to 42)
+              Recalc per-px: range $2500–(-$400)=$2900 over 168px (15 to 183)
+              y(v) = 15 + (1 - (v - (-400)) / 2900) * 168
+                   = 15 + (1 - (v+400)/2900) * 168
+              $265  → 15 + (1 - 665/2900)*168 = 15 + 0.7707*168 = 144.5 ≈ 145
+              $410  → 15 + (1 - 810/2900)*168 = 15 + 0.7207*168 = 136.1 ≈ 136
+              $320  → 15 + (1 - 720/2900)*168 = 15 + 0.7517*168 = 141.3 ≈ 141
+              -$120 → 15 + (1 - 280/2900)*168 = 15 + 0.9034*168 = 166.8 ≈ 167
+              -$397 → 15 + (1 - 3/2900)*168   = 15 + 0.9990*168 = 182.8 ≈ 183
+              -$180 → 15 + (1 - 220/2900)*168 = 15 + 0.9241*168 = 170.2 ≈ 170
+              $150  → 15 + (1 - 550/2900)*168 = 15 + 0.8103*168 = 151.1 ≈ 151
+              $620  → 15 + (1 - 1020/2900)*168= 15 + 0.6483*168 = 123.9 ≈ 124
+              $1350 → 15 + (1 - 1750/2900)*168= 15 + 0.3966*168 = 81.6  ≈ 82
+              $1780 → 15 + (1 - 2180/2900)*168= 15 + 0.2483*168 = 56.7  ≈ 57
+              $2100 → 15 + (1 - 2500/2900)*168= 15 + 0.1379*168 = 38.2  ≈ 38
+
+              X positions: 11 points across 50→760 = 71px apart
+              x0=50, x1=121, x2=192, x3=263, x4=334, x5=405, x6=476, x7=547, x8=618, x9=689, x10=760
+            -->
+
+            <!-- Teal fill above $0 -->
+            <path d="M50,145 C71,145 100,138 121,136 C142,134 171,142 192,141 C213,140 242,168 263,167 C284,166 313,184 334,183 C355,182 384,172 405,170 C426,168 455,153 476,151 C497,149 526,128 547,124 C568,120 597,86 618,82 C639,78 668,60 689,57 C710,54 739,40 760,38 L760,155 L50,155 Z"
+                  fill="url(#eqGradTeal)" clip-path="url(#clipAboveZero)"/>
+
+            <!-- Red fill below $0 -->
+            <path d="M50,145 C71,145 100,138 121,136 C142,134 171,142 192,141 C213,140 242,168 263,167 C284,166 313,184 334,183 C355,182 384,172 405,170 C426,168 455,153 476,151 C497,149 526,128 547,124 C568,120 597,86 618,82 C639,78 668,60 689,57 C710,54 739,40 760,38 L760,155 L50,155 Z"
+                  fill="url(#eqGradRed)" clip-path="url(#clipBelowZero)"/>
+
+            <!-- Teal line above $0 -->
+            <path d="M50,145 C71,145 100,138 121,136 C142,134 171,142 192,141 C213,140 242,168 263,167 C284,166 313,184 334,183 C355,182 384,172 405,170 C426,168 455,153 476,151 C497,149 526,128 547,124 C568,120 597,86 618,82 C639,78 668,60 689,57 C710,54 739,40 760,38"
+                  fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
+                  clip-path="url(#clipAboveZero)" class="equity-path"/>
+
+            <!-- Red line below $0 -->
+            <path d="M50,145 C71,145 100,138 121,136 C142,134 171,142 192,141 C213,140 242,168 263,167 C284,166 313,184 334,183 C355,182 384,172 405,170 C426,168 455,153 476,151 C497,149 526,128 547,124 C568,120 597,86 618,82 C639,78 668,60 689,57 C710,54 739,40 760,38"
+                  fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
+                  clip-path="url(#clipBelowZero)" class="equity-path"/>
+
+            <!-- Drawdown marker at -$397 trough -->
+            <circle cx="334" cy="183" r="3.5" fill="#EF4444"/>
+            <!-- Label badge: dark pill behind text, positioned below-right of the dot -->
+            <rect x="345" y="189" width="42" height="16" rx="3" fill="#0D1117" fill-opacity="0.85" stroke="#EF4444" stroke-opacity="0.35" stroke-width="0.5"/>
+            <text x="366" y="200" fill="#EF4444" font-size="9.5" font-family="Fira Code" font-weight="600" text-anchor="middle">-$397</text>
+
+            <!-- Current position dot -->
+            <circle cx="760" cy="38" r="3" fill="#00D4AA" opacity="0.9"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- BEHAVIORAL SIGNALS — 4 cols -->
+      <div class="tile col-span-4 flex flex-col" style="max-height: 320px; overflow: hidden;">
+        <div class="tile-header px-3 pt-1.5 pb-0.5">Behavioral Signals</div>
+        <div class="px-3 pb-1 flex-1 flex flex-col" style="gap:0;">
+
+          <!-- Pattern detected callout -->
+          <div class="rounded px-2 py-1" style="background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.12); margin-bottom:8px;">
+            <div class="flex items-center gap-1.5">
+              <div class="w-1.5 h-1.5 rounded-full bg-loss"></div>
+              <span class="text-[10px] font-semibold loss-text font-display">Pattern detected</span>
+            </div>
+            <p class="text-[10px] text-label-secondary leading-snug">You have <span class="loss-text font-semibold">3 revenge trades</span> — entries &lt;2 min of a loss. Wait 10+ min = <span class="gain-text font-semibold">71% win rate</span>. <span class="text-label-tertiary italic">The edge is in the pause.</span></p>
+          </div>
+
+          <!-- Signal rows - inline descriptions -->
+          <div class="flex-1" style="display:flex;flex-direction:column;gap:7px;">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2C6 5 4 7 4 10a4 4 0 108 0c0-3-2-5-4-8z" fill="#EF4444" opacity="0.8"/></svg>
+                <span class="text-[10px] text-label-primary font-display font-medium">Revenge trades</span>
+                <span class="text-[10px] text-label-tertiary">— &lt;2 min re-entry, all lost</span>
+              </div>
+              <span class="text-[11px] font-bold tabular-nums loss-text">3</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 14H1L8 1z" stroke="#FFD600" stroke-width="1.5" fill="none"/><line x1="8" y1="6" x2="8" y2="10" stroke="#FFD600" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r="0.8" fill="#FFD600"/></svg>
+                <span class="text-[10px] text-label-primary font-display font-medium">Overtrade days</span>
+                <span class="text-[10px] text-label-tertiary">— Dec 1, 15 (5+ trades)</span>
+              </div>
+              <span class="text-[11px] font-bold tabular-nums warn-text">2</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 6L8 2L13 6V8L11 7V14H5V7L3 8V6z" fill="#34D399" opacity="0.8"/></svg>
+                <span class="text-[10px] text-label-primary font-display font-medium">Best win streak</span>
+                <span class="text-[10px] text-label-tertiary">— Nov 19-26</span>
+              </div>
+              <span class="text-[11px] font-bold tabular-nums gain-text">5</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><polyline points="2,4 6,8 10,5 14,12" stroke="#EF4444" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="text-[10px] text-label-primary font-display font-medium">Worst loss streak</span>
+                <span class="text-[10px] text-label-tertiary">— Dec 3-11, tilt risk</span>
+              </div>
+              <span class="text-[11px] font-bold tabular-nums loss-text">4</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="8" width="3" height="6" rx="0.5" fill="#8B949E" opacity="0.6"/><rect x="5.5" y="5" width="3" height="9" rx="0.5" fill="#8B949E" opacity="0.6"/><rect x="10" y="2" width="3" height="12" rx="0.5" fill="#8B949E" opacity="0.6"/></svg>
+                <span class="text-[10px] text-label-primary font-display font-medium">Tilt indicator</span>
+                <span class="text-[10px] text-label-tertiary">— 3/49 emotional</span>
+              </div>
+              <span class="pill loss-text" style="background: rgba(239,68,68,0.12); font-size:10px; letter-spacing:0.08em;">MODERATE</span>
+            </div>
+          </div>
+
+          <!-- Focus areas -->
+          <div class="rounded px-2 py-1 mt-2" style="background: rgba(0,212,170,0.04); border: 1px solid rgba(48,54,61,0.15);">
+            <div class="text-[10px] neon-text font-semibold tracking-wider uppercase mb-0.5 font-display">Focus This Week</div>
+            <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:1px;">
+              <li class="text-[10px] text-label-secondary flex items-start gap-1.5 leading-tight">
+                <span class="loss-text">&#x2022;</span>
+                Wait 10 min after loss before re-entering
+              </li>
+              <li class="text-[10px] text-label-secondary flex items-start gap-1.5 leading-tight">
+                <span class="warn-text">&#x2022;</span>
+                Cap at 2 trades/session
+              </li>
+              <li class="text-[10px] text-label-secondary flex items-start gap-1.5 leading-tight">
+                <span class="gain-text">&#x2022;</span>
+                Lean into Wed/Thu 9:30 opens
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: BOTTOM PANELS -->
+    <div class="grid grid-cols-2 gap-1.5 mt-1">
+
+      <!-- COMBINED: P&L BY TIME OF DAY + P&L BY DAY OF WEEK -->
+      <div class="tile">
+        <!-- Time of Day section -->
+        <div class="flex items-center justify-between px-3 pt-2 pb-1">
+          <span class="tile-header">P&L by Time of Day</span>
+          <span class="text-[10px] gain-text tabular-nums font-semibold">9:30 ET BEST</span>
+        </div>
+        <div class="px-3 pb-1.5">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">9:30</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:85%; background: rgba(52,211,153,0.65);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-14 text-right shrink-0">+$1,084</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">10:00</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:52%; background: rgba(52,211,153,0.55);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-14 text-right shrink-0">+$612</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">10:30</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:18%; background: rgba(239,68,68,0.55);"></div>
+              </div>
+              <span class="text-[10px] loss-text tabular-nums w-14 text-right shrink-0">-$201</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">11:00</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:50%; background: rgba(52,211,153,0.55);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-14 text-right shrink-0">+$601</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">11:30</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:32%; background: rgba(52,211,153,0.50);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-14 text-right shrink-0">+$385</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-10 text-right tabular-nums shrink-0">12:00+</span>
+              <div class="flex-1 h-3.5 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:30%; background: rgba(239,68,68,0.55);"></div>
+              </div>
+              <span class="text-[10px] loss-text tabular-nums w-14 text-right shrink-0">-$381</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtle divider -->
+        <div class="mx-3 border-t" style="border-color: rgba(92,92,122,0.15);"></div>
+
+        <!-- Day of Week section (compact) -->
+        <div class="flex items-center justify-between px-3 pt-1 pb-0.5">
+          <span class="tile-header">P&L by Day of Week</span>
+          <span class="text-[10px] gain-text tabular-nums font-semibold">TUE BEST</span>
+        </div>
+        <div class="px-3 pb-2">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-8 text-right tabular-nums shrink-0">Mon</span>
+              <div class="flex-1 h-3 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:16%; background: rgba(239,68,68,0.55);"></div>
+              </div>
+              <span class="text-[10px] loss-text tabular-nums w-12 text-right shrink-0">-$200</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-8 text-right tabular-nums shrink-0">Tue</span>
+              <div class="flex-1 h-3 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:100%; background: rgba(52,211,153,0.65);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-12 text-right shrink-0">+$1,275</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-8 text-right tabular-nums shrink-0">Wed</span>
+              <div class="flex-1 h-3 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:53%; background: rgba(52,211,153,0.55);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-12 text-right shrink-0">+$680</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-8 text-right tabular-nums shrink-0">Thu</span>
+              <div class="flex-1 h-3 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:32%; background: rgba(52,211,153,0.50);"></div>
+              </div>
+              <span class="text-[10px] gain-text tabular-nums w-12 text-right shrink-0">+$402</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-label-tertiary w-8 text-right tabular-nums shrink-0">Fri</span>
+              <div class="flex-1 h-3 rounded-sm overflow-hidden" style="background: rgba(22,27,34,0.8);">
+                <div class="h-full rounded-sm" style="width:4%; background: rgba(239,68,68,0.55);"></div>
+              </div>
+              <span class="text-[10px] loss-text tabular-nums w-12 text-right shrink-0">-$57</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONTHLY P&L — CARD STRIP — NEWEST FIRST -->
+      <div class="tile" id="monthly-pnl">
+        <div class="flex items-center justify-between px-3 pt-2 pb-1">
+          <span class="tile-header">Monthly P&L</span>
+          <span class="text-[10px] text-label-tertiary tabular-nums">Nov 25 – Mar 26</span>
+        </div>
+        <div class="px-2 pb-1.5">
+          <div class="grid grid-cols-2 gap-1" style="grid-auto-rows: auto;">
+            <!-- Mar (newest first) -->
+            <div class="month-card rounded px-2.5 py-1.5 flex items-center justify-between" style="background: rgba(52,211,153,0.07); border-left: 2px solid rgba(52,211,153,0.55);">
+              <div>
+                <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Mar '26</div>
+                <div class="text-[13px] font-bold tabular-nums gain-text mt-0.5 font-display">+$680</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-label-secondary tabular-nums font-medium">8</div>
+                <div class="text-[10px] text-label-tertiary">trades</div>
+              </div>
+            </div>
+            <!-- Feb — best month highlight -->
+            <div class="month-card rounded px-2.5 py-1.5 flex items-center justify-between" style="background: rgba(52,211,153,0.10); border-left: 2px solid rgba(52,211,153,0.70);">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider font-semibold font-display" style="color: #6EE7B7;">Feb '26</div>
+                <div class="text-[13px] font-bold tabular-nums gain-text mt-0.5 font-display">+$875</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-label-secondary tabular-nums font-medium">15</div>
+                <div class="text-[10px] text-label-tertiary">trades</div>
+              </div>
+            </div>
+            <!-- Jan — loss month -->
+            <div class="month-card rounded px-2.5 py-1.5 flex items-center justify-between" style="background: rgba(239,68,68,0.06); border-left: 2px solid rgba(239,68,68,0.50);">
+              <div>
+                <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Jan '26</div>
+                <div class="text-[13px] font-bold tabular-nums loss-text mt-0.5 font-display">-$42</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-label-secondary tabular-nums font-medium">9</div>
+                <div class="text-[10px] text-label-tertiary">trades</div>
+              </div>
+            </div>
+            <!-- Dec -->
+            <div class="month-card rounded px-2.5 py-1.5 flex items-center justify-between" style="background: rgba(52,211,153,0.03); border-left: 2px solid rgba(52,211,153,0.25);">
+              <div>
+                <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Dec '25</div>
+                <div class="text-[13px] font-bold tabular-nums gain-text mt-0.5 font-display">+$28</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-label-secondary tabular-nums font-medium">8</div>
+                <div class="text-[10px] text-label-tertiary">trades</div>
+              </div>
+            </div>
+            <!-- Nov -->
+            <div class="month-card rounded px-2.5 py-1.5 flex items-center justify-between" style="background: rgba(52,211,153,0.06); border-left: 2px solid rgba(52,211,153,0.50);">
+              <div>
+                <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Nov '25</div>
+                <div class="text-[13px] font-bold tabular-nums gain-text mt-0.5 font-display">+$265</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-label-secondary tabular-nums font-medium">13</div>
+                <div class="text-[10px] text-label-tertiary">trades</div>
+              </div>
+            </div>
+          </div>
+          <!-- Summary line -->
+          <div class="flex items-center justify-between pt-1 mt-0.5 px-0.5">
+            <span class="text-[10px] text-label-tertiary">Best: <span class="gain-text font-semibold">Feb</span></span>
+            <span class="text-[10px] text-label-tertiary tabular-nums">Avg: <span class="text-label-secondary font-semibold">+$361</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-0.5 pt-0.5 border-t border-void-300 flex items-center justify-between px-1">
+      <span class="text-[10px] text-label-tertiary">TradeLog v1.0</span>
+      <div class="flex items-center gap-3">
+        <span class="text-[10px] text-label-tertiary tabular-nums">Last Import: Mar 22, 2026</span>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-gain"></div>
+          <span class="text-[10px] text-label-tertiary">Connected</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

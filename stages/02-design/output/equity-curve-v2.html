@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equity Curve v2 — Trading Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06080C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Sora', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Card — Split Cockpit dark panel */
+  .card {
+    width: 65%;
+    min-width: 620px;
+    max-width: 1100px;
+    background: #141820;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* Subtle outer glow for depth separation from page bg */
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.02),
+      0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* Header row */
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 0 18px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .header-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8B95A8;
+  }
+
+  .header-sublabel {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    color: #4A5568;
+  }
+
+  /* Time range toggle pills */
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 0;
+  }
+
+  .toggle-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: #4A5568;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle-btn:hover {
+    color: #8B95A8;
+  }
+
+  .toggle-btn:focus-visible {
+    outline: 2px solid rgba(45,212,191,0.4);
+    outline-offset: 1px;
+  }
+
+  .toggle-btn.active {
+    background: rgba(45,212,191,0.12);
+    color: #E8ECF2;
+  }
+
+  /* Chart area */
+  .chart-area {
+    position: relative;
+    padding: 4px 12px 10px 12px;
+    height: 420px;
+  }
+
+  #chart-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Custom frosted-glass tooltip */
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    min-width: 140px;
+    opacity: 0;
+    transition: opacity 80ms ease-out;
+  }
+
+  .tooltip.visible {
+    opacity: 1;
+    transition: opacity 120ms ease-out;
+  }
+
+  .tooltip-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #8B95A8;
+  }
+
+  .tooltip-value {
+    font-family: 'Sora', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 4px;
+    /* Subtle glow on the P&L number for cockpit feel */
+  }
+
+  .tooltip-day {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .tooltip-drawdown {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #EF4444;
+    margin-top: 2px;
+  }
+
+  /* Color utility classes */
+  .gain { color: #10B981; }
+  .loss { color: #EF4444; }
+  .gain-bright { color: #34D399; }
+  .loss-bright { color: #F87171; }
+
+  /* Glow variants for tooltip value — adds that cockpit-display depth */
+  .gain-glow {
+    color: #10B981;
+    text-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+  .loss-glow {
+    color: #EF4444;
+    text-shadow: 0 0 12px rgba(239,68,68,0.3);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .tooltip {
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="header-left">
+      <span class="header-label">Equity Curve</span>
+      <span class="header-sublabel">Cumulative P&L</span>
+    </div>
+    <div class="toggle-container" role="tablist" aria-label="Time range">
+      <button class="toggle-btn" data-range="1W" role="tab" aria-selected="false">1W</button>
+      <button class="toggle-btn" data-range="1M" role="tab" aria-selected="false">1M</button>
+      <button class="toggle-btn" data-range="3M" role="tab" aria-selected="false">3M</button>
+      <button class="toggle-btn active" data-range="ALL" role="tab" aria-selected="true">ALL</button>
+    </div>
+  </div>
+  <div class="chart-area">
+    <div id="chart-container"></div>
+    <div class="tooltip" id="tooltip" aria-hidden="true">
+      <div class="tooltip-date" id="tooltip-date"></div>
+      <div class="tooltip-value" id="tooltip-value"></div>
+      <div class="tooltip-day" id="tooltip-day"></div>
+      <div class="tooltip-drawdown" id="tooltip-drawdown"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SAMPLE DATA — ~60 trading days, Feb–Apr 2026
+// Realistic futures day-trading P&L curve:
+//   - Starts near $0, trends up with drawdowns
+//   - Max drawdown ~$1,200, final ~$2,800
+//   - Mix of red and green days
+// ============================================================
+function generateEquityData() {
+  const data = [];
+  const dayPnl = [];
+  let cumulative = 0;
+  const startDate = new Date(2026, 1, 2); // Feb 2, 2026
+
+  const dailyReturns = [
+    // Feb: choppy start, finding footing
+    -180, 95, -250, -120, 60,    // week 1: rough, -$395
+    -90, 210, -40, 150, 280,     // week 2: recovery starts
+    -60, 195, -320, -180, 250,   // week 3: volatility, big red day
+    130, -70, 340, -110, 85,     // week 4: trend emerging
+
+    // Mar: growth phase with a sharp drawdown mid-month
+    220, -45, 175, 90, -280,     // week 5: momentum then pullback
+    -190, 310, 140, -50, 260,    // week 6: recovery rally
+    -130, 85, 195, 50, -100,     // week 7: consolidation
+    270, -35, 160, 120, -200,    // week 8: sawtooth
+
+    // Apr: strong finish
+    310, -70, 230, -25, 145,     // week 9: breakout
+    200, 165, -110, 250, 80,     // week 10: running
+    -55, 190, 135, 95, -60,      // week 11: steady
+    280, -40, 175, 120, -80,     // week 12: finish strong
+    210, 150                      // extra days
+  ];
+
+  let tradingDay = 0;
+  for (let i = 0; i < 100; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue; // skip weekends
+    if (tradingDay >= dailyReturns.length) break;
+
+    const pnl = dailyReturns[tradingDay];
+    cumulative += pnl;
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const timeStr = `${year}-${month}-${day}`;
+
+    data.push({ time: timeStr, value: cumulative });
+    dayPnl.push({ time: timeStr, pnl: pnl });
+    tradingDay++;
+  }
+
+  return { data, dayPnl };
+}
+
+const { data: allData, dayPnl: allDayPnl } = generateEquityData();
+
+// ============================================================
+// MAX DRAWDOWN — find peak-to-trough region
+// ============================================================
+function findMaxDrawdown(data) {
+  let peak = -Infinity;
+  let peakIdx = 0;
+  let maxDD = 0;
+  let troughIdx = 0;
+  let ddPeakIdx = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].value > peak) {
+      peak = data[i].value;
+      peakIdx = i;
+    }
+    const dd = peak - data[i].value;
+    if (dd > maxDD) {
+      maxDD = dd;
+      troughIdx = i;
+      ddPeakIdx = peakIdx;
+    }
+  }
+  return { peakIndex: ddPeakIdx, troughIndex: troughIdx, drawdown: maxDD };
+}
+
+const ddInfo = findMaxDrawdown(allData);
+
+// ============================================================
+// CHART CREATION
+// ============================================================
+const container = document.getElementById('chart-container');
+
+const chart = LightweightCharts.createChart(container, {
+  width: container.clientWidth,
+  height: container.clientHeight,
+  layout: {
+    background: { type: 'solid', color: 'transparent' },
+    textColor: '#4A5568',
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontSize: 10,
+    attributionLogo: false,
+  },
+  grid: {
+    vertLines: { visible: false },
+    horzLines: { color: 'rgba(255,255,255,0.04)', style: 0 },
+  },
+  rightPriceScale: {
+    borderVisible: false,
+    scaleMargins: { top: 0.1, bottom: 0.1 },
+  },
+  timeScale: {
+    borderVisible: false,
+    timeVisible: false,
+    rightOffset: 2,
+    fixLeftEdge: true,
+    fixRightEdge: true,
+  },
+  crosshair: {
+    vertLine: {
+      color: 'rgba(45,212,191,0.20)',
+      width: 1,
+      style: 0, // Solid
+      labelVisible: false,
+    },
+    horzLine: {
+      color: 'rgba(45,212,191,0.20)',
+      width: 1,
+      style: 1, // Dashed
+      labelVisible: false,
+    },
+  },
+  handleScroll: false,
+  handleScale: false,
+});
+
+// Price formatter — $926, $1.4k, -$350
+chart.applyOptions({
+  localization: {
+    priceFormatter: (price) => {
+      const abs = Math.abs(price);
+      const sign = price < 0 ? '-' : '';
+      if (abs >= 1000) return sign + '$' + (abs / 1000).toFixed(1) + 'k';
+      return sign + '$' + Math.round(abs);
+    },
+  },
+});
+
+// ============================================================
+// BASELINE SERIES — dual-color line + gradient fills
+// ============================================================
+const series = chart.addSeries(LightweightCharts.BaselineSeries, {
+  baseValue: { type: 'price', price: 0 },
+  lineWidth: 2,
+  topLineColor: '#10B981',
+  bottomLineColor: '#EF4444',
+  topFillColor1: 'rgba(16,185,129,0.28)',
+  topFillColor2: 'rgba(16,185,129,0.02)',
+  bottomFillColor1: 'rgba(239,68,68,0.02)',
+  bottomFillColor2: 'rgba(239,68,68,0.22)',
+  lastValueVisible: true,
+  priceLineVisible: false,
+});
+
+// ============================================================
+// ZERO LINE — dashed reference
+// ============================================================
+series.createPriceLine({
+  price: 0,
+  color: 'rgba(255,255,255,0.06)',
+  lineWidth: 1,
+  lineStyle: 1, // Dashed
+  axisLabelVisible: false,
+});
+
+// ============================================================
+// DRAWDOWN OVERLAY — shaded region from peak to trough
+// ============================================================
+const ddOverlay = document.createElement('div');
+ddOverlay.style.cssText = `
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 1px solid rgba(239, 68, 68, 0.15);
+  border-right: 1px solid rgba(239, 68, 68, 0.15);
+  z-index: 1;
+  display: none;
+`;
+container.style.position = 'relative';
+container.appendChild(ddOverlay);
+
+function updateDrawdownOverlay(visibleData) {
+  const peakTime = allData[ddInfo.peakIndex]?.time;
+  const troughTime = allData[ddInfo.troughIndex]?.time;
+  if (!peakTime || !troughTime) { ddOverlay.style.display = 'none'; return; }
+
+  // Check if peak and trough are within visible data
+  const peakVisible = visibleData.some(d => d.time === peakTime);
+  const troughVisible = visibleData.some(d => d.time === troughTime);
+  if (!peakVisible && !troughVisible) { ddOverlay.style.display = 'none'; return; }
+
+  const ts = chart.timeScale();
+  const leftCoord = ts.timeToCoordinate(peakTime);
+  const rightCoord = ts.timeToCoordinate(troughTime);
+
+  if (leftCoord === null || rightCoord === null) { ddOverlay.style.display = 'none'; return; }
+
+  ddOverlay.style.left = Math.min(leftCoord, rightCoord) + 'px';
+  ddOverlay.style.width = Math.abs(rightCoord - leftCoord) + 'px';
+  ddOverlay.style.display = 'block';
+}
+
+// ============================================================
+// TIME RANGE FILTERING
+// ============================================================
+let activeRange = 'ALL';
+
+function getFilteredData(range) {
+  if (range === 'ALL') return { data: allData, dayPnl: allDayPnl };
+
+  const lastDate = new Date(allData[allData.length - 1].time);
+  let daysBack;
+  switch (range) {
+    case '1W': daysBack = 7; break;
+    case '1M': daysBack = 30; break;
+    case '3M': daysBack = 90; break;
+    default: return { data: allData, dayPnl: allDayPnl };
+  }
+
+  const cutoff = new Date(lastDate);
+  cutoff.setDate(cutoff.getDate() - daysBack);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  const filteredData = allData.filter(d => d.time >= cutoffStr);
+  const filteredDayPnl = allDayPnl.filter(d => d.time >= cutoffStr);
+  return { data: filteredData, dayPnl: filteredDayPnl };
+}
+
+function updateChart(range) {
+  const { data } = getFilteredData(range);
+  series.setData(data);
+  chart.timeScale().fitContent();
+
+  // Update drawdown overlay after layout settles
+  requestAnimationFrame(() => updateDrawdownOverlay(data));
+}
+
+updateChart('ALL');
+
+// ============================================================
+// CUSTOM TOOLTIP — frosted glass overlay
+// ============================================================
+const tooltipEl = document.getElementById('tooltip');
+const tooltipDate = document.getElementById('tooltip-date');
+const tooltipValue = document.getElementById('tooltip-value');
+const tooltipDay = document.getElementById('tooltip-day');
+const tooltipDrawdown = document.getElementById('tooltip-drawdown');
+
+// Day P&L lookup map
+const dayPnlMap = {};
+allDayPnl.forEach(d => { dayPnlMap[d.time] = d.pnl; });
+
+// Max drawdown region time strings
+const ddPeakTime = allData[ddInfo.peakIndex].time;
+const ddTroughTime = allData[ddInfo.troughIndex].time;
+
+function formatDate(timeStr) {
+  const d = new Date(timeStr + 'T00:00:00');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function formatDollar(val) {
+  const sign = val >= 0 ? '+' : '-';
+  const abs = Math.abs(val);
+  return sign + '$' + abs.toLocaleString('en-US');
+}
+
+chart.subscribeCrosshairMove((param) => {
+  if (!param.point || !param.time || param.point.x < 0 || param.point.y < 0) {
+    tooltipEl.classList.remove('visible');
+    return;
+  }
+
+  const seriesData = param.seriesData.get(series);
+  if (!seriesData) {
+    tooltipEl.classList.remove('visible');
+    return;
+  }
+
+  const value = seriesData.value;
+  const time = param.time;
+
+  // Date row
+  tooltipDate.textContent = formatDate(time);
+
+  // Cumulative P&L — neutral white, no directional indicator
+  tooltipValue.textContent = '$' + Math.abs(value).toLocaleString('en-US');
+  tooltipValue.className = 'tooltip-value';
+  tooltipValue.style.color = '#E8ECF2';
+  tooltipValue.style.textShadow = 'none';
+
+  // Day P&L row
+  const dp = dayPnlMap[time];
+  if (dp !== undefined) {
+    const arrow = dp >= 0 ? '▲' : '▼';
+    tooltipDay.textContent = arrow + ' ' + formatDollar(dp) + ' on the day';
+    tooltipDay.className = 'tooltip-day ' + (dp >= 0 ? 'gain-bright' : 'loss-bright');
+    tooltipDay.style.display = 'block';
+  } else {
+    tooltipDay.style.display = 'none';
+  }
+
+  // Max drawdown annotation — show when hovering within the drawdown region
+  if (time >= ddPeakTime && time <= ddTroughTime) {
+    tooltipDrawdown.textContent = 'Max DD: -$' + Math.round(ddInfo.drawdown).toLocaleString('en-US');
+    tooltipDrawdown.style.display = 'block';
+  } else {
+    tooltipDrawdown.style.display = 'none';
+  }
+
+  // Position tooltip relative to chart area
+  const chartRect = container.getBoundingClientRect();
+  const chartAreaEl = container.parentElement;
+  const chartAreaRect = chartAreaEl.getBoundingClientRect();
+  const tooltipWidth = tooltipEl.offsetWidth || 160;
+
+  let left = param.point.x + 12 + (chartRect.left - chartAreaRect.left);
+  // Flip to left side if near right edge
+  if (param.point.x > chartRect.width - 200) {
+    left = param.point.x - tooltipWidth - 12 + (chartRect.left - chartAreaRect.left);
+  }
+
+  let top = param.point.y - 40 + (chartRect.top - chartAreaRect.top);
+  // Clamp within chart area
+  if (top < 0) top = 4;
+  if (top + 80 > chartAreaRect.height) top = chartAreaRect.height - 90;
+
+  tooltipEl.style.left = left + 'px';
+  tooltipEl.style.top = top + 'px';
+  tooltipEl.classList.add('visible');
+});
+
+// ============================================================
+// TIME RANGE TOGGLE — pointerdown for unified mouse+touch
+// ============================================================
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    const range = btn.dataset.range;
+    activeRange = range;
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    updateChart(range);
+  });
+});
+
+// ============================================================
+// RESIZE OBSERVER
+// ============================================================
+const resizeObserver = new ResizeObserver(entries => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    chart.applyOptions({ width, height });
+    requestAnimationFrame(() => updateDrawdownOverlay(getFilteredData(activeRange).data));
+  }
+});
+resizeObserver.observe(container);
+</script>
+
+</body>
+</html>

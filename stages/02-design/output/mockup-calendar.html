@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Calendar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT:'#0D1117',50:'#0D1117',100:'#161B22',150:'#131920',200:'#161B22',300:'#21262D',400:'#262C36',500:'#2D333B',600:'#3D444D',700:'#484F58' },
+            neon: { DEFAULT:'#00D4AA',bright:'#33DDBB',dim:'#00B894',muted:'#009D7E',subtle:'rgba(0,212,170,0.12)',ring:'rgba(0,212,170,0.25)' },
+            gain: { DEFAULT:'#34D399',bright:'#6EE7B7',dim:'#10B981',bg:'rgba(52,211,153,0.06)' },
+            loss: { DEFAULT:'#EF4444',bright:'#F87171',dim:'#DC2626',bg:'rgba(239,68,68,0.06)' },
+            flat: { DEFAULT:'#6E7681',bg:'rgba(48,54,61,0.10)' },
+            label: { primary:'#E6EDF3',secondary:'#8B949E',tertiary:'#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Fira Code',monospace;-webkit-font-smoothing:antialiased;background:#0D1117;color:#E6EDF3}
+    .font-display{font-family:'Space Grotesk',sans-serif}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .tile{background:#161B22;border:1px solid rgba(48,54,61,0.12);border-radius:6px}
+    .tile-header{font-family:'Fira Code',monospace;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#6E7681}
+    .gain-text{color:#34D399}.loss-text{color:#EF4444}.neon-text{color:#00D4AA}.warn-text{color:#FFD600}
+    .pill{font-size:10px;font-weight:600;padding:1px 6px;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block}
+    .nav-link{color:#6E7681;font-size:12px;letter-spacing:0.02em;cursor:pointer;transition:color 0.15s}
+    .nav-link:hover{color:#8B949E}
+    .nav-link.active{color:#E6EDF3;background:rgba(0,212,170,0.12);padding:4px 10px;border-radius:4px}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#21262D;border-radius:2px}
+    .cal-day{border:1px solid rgba(48,54,61,0.10);border-radius:6px;min-height:90px;padding:8px 10px;transition:background 0.15s}
+    .cal-day.has-trades{cursor:pointer}
+    .cal-day.has-trades:hover{background:rgba(0,212,170,0.04)}
+    .cal-day.empty{background:transparent;border-color:rgba(48,54,61,0.05)}
+    .cal-day.win{background:rgba(52,211,153,0.04)}
+    .cal-day.win-strong{background:rgba(52,211,153,0.10)}
+    .cal-day.loss{background:rgba(239,68,68,0.04)}
+    .cal-day.loss-strong{background:rgba(239,68,68,0.10)}
+    .cal-day.flat-day{background:rgba(48,54,61,0.04)}
+    .month-nav-btn{background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);border-radius:4px;padding:4px 10px;color:#8B949E;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:12px;transition:all 0.15s}
+    .month-nav-btn:hover{color:#E6EDF3;border-color:rgba(48,54,61,0.30)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP NAV -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background:rgba(13,17,23,0.95)">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link px-2.5 py-1">Dashboard</span>
+        <span class="nav-link active">Calendar</span>
+        <span class="nav-link px-2.5 py-1">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>TOPSTEP X</span>
+        <span class="text-void-500">|</span>
+        <span>84 trades</span>
+        <span class="text-void-500">|</span>
+        <span>Nov 2025 – Mar 2026</span>
+      </div>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;cursor:pointer;">+ Import CSV</button>
+    </div>
+  </header>
+
+  <main class="p-4 w-full max-w-[1280px] mx-auto">
+
+    <!-- MONTH SELECTOR -->
+    <div class="flex items-center justify-between mb-2 mt-0.5">
+      <div class="flex items-center gap-3">
+        <button class="month-nav-btn">&larr;</button>
+        <h1 class="font-display text-xl font-bold text-label-primary">March 2026</h1>
+        <button class="month-nav-btn">&rarr;</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Nov '25</span>
+        <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Dec '25</span>
+        <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Jan '26</span>
+        <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Feb '26</span>
+        <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display" style="background:rgba(0,212,170,0.15);color:#00D4AA;border:1px solid rgba(0,212,170,0.25);">Mar '26</span>
+      </div>
+    </div>
+
+    <!-- CALENDAR GRID -->
+    <div class="tile p-4 mb-3">
+      <!-- Day headers -->
+      <div class="grid grid-cols-7 gap-1.5 mb-2">
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Mon</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Tue</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Wed</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Thu</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Fri</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Sat</div>
+        <div class="text-center text-[11px] text-label-tertiary uppercase tracking-wider font-display font-semibold py-1.5">Sun</div>
+      </div>
+
+      <!-- Week 1: Mar 2-8 (Mar starts on Sunday, so week row starts with empty Mon-Sat, Sun=1... but Mar 1 2026 is a Sunday) -->
+      <!-- Actually March 2026: Mar 1 = Sunday. So week 1 has Mon-Sat empty, Sun=1 -->
+      <!-- Let me do accurate March 2026 layout -->
+      <!-- Mar 1 = Sun, Mar 2 = Mon, etc. -->
+
+      <!-- Week row: Feb 24 - Mar 2 (partial) -->
+      <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+        <!-- Mon Feb 24 (prev month) -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary opacity-30">24</div>
+        </div>
+        <!-- Tue Feb 25 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary opacity-30">25</div>
+        </div>
+        <!-- Wed Feb 26 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary opacity-30">26</div>
+        </div>
+        <!-- Thu Feb 27 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary opacity-30">27</div>
+        </div>
+        <!-- Fri Feb 28 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary opacity-30">28</div>
+        </div>
+        <!-- Sat Mar 1 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">1</div>
+        </div>
+        <!-- Sun Mar 2 -->
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">2</div>
+        </div>
+      </div>
+
+      <!-- Week row: Mar 3 - 9 -->
+      <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">3</div>
+        </div>
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">4</div>
+        </div>
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">5</div>
+        </div>
+        <!-- Thu Mar 6 — Win +$2 -->
+        <div class="cal-day win has-trades">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-label-secondary font-medium">6</span>
+            <span class="text-[11px] text-label-tertiary">1 trade</span>
+          </div>
+          <div class="text-[14px] font-bold tabular-nums gain-text mt-1 font-display">+$2</div>
+          <div class="flex items-center gap-1 mt-0.5"><span class="pill" style="background:rgba(0,212,170,0.12);color:#00D4AA;font-size:10px;">MNQ</span></div>
+        </div>
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">7</div>
+        </div>
+        <div class="cal-day empty">
+          <div class="text-[12px] text-label-tertiary">8</div>
+        </div>
+        <!-- Sun Mar 9 — Win +$400 -->
+        <div class="cal-day win-strong has-trades">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-label-secondary font-medium">9</span>
+            <span class="text-[11px] text-label-tertiary">1 trade</span>
+          </div>
+          <div class="text-[14px] font-bold tabular-nums gain-text mt-1 font-display">+$400</div>
+          <div class="flex items-center gap-1 mt-0.5"><span class="pill" style="background:rgba(48,54,61,0.12);color:#8B949E;font-size:10px;">MYM</span></div>
+        </div>
+      </div>
+
+      <!-- Week row: Mar 10 - 16 -->
+      <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+        <!-- Mon Mar 10 — Loss -$200 -->
+        <div class="cal-day loss has-trades">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-label-secondary font-medium">10</span>
+            <span class="text-[11px] text-label-tertiary">1 trade</span>
+          </div>
+          <div class="text-[14px] font-bold tabular-nums loss-text mt-1 font-display">-$200</div>
+          <div class="flex items-center gap-1 mt-0.5"><span class="pill" style="background:rgba(48,54,61,0.12);color:#8B949E;font-size:10px;">MYM</span></div>
+        </div>
+        <!-- Tue Mar 11 — Win +$400 -->
+        <div class="cal-day win-strong has-trades">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-label-secondary font-medium">11</span>
+            <span class="text-[11px] text-label-tertiary">1 trade</span>
+          </div>
+          <div class="text-[14px] font-bold tabular-nums gain-text mt-1 font-display">+$400</div>
+          <div class="flex items-center gap-1 mt-0.5"><span class="pill" style="background:rgba(0,212,170,0.12);color:#00D4AA;font-size:10px;">MNQ</span></div>
+        </div>
+        <!-- Wed Mar 12 — Win +$400 -->
+        <div class="cal-day win-strong has-trades">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-label-secondary font-medium">12</span>
+            <span class="text-[11px] text-label-tertiary">1 trade</span>
+          </div>
+          <div class="text-[14px] font-bold tabular-nums gain-text mt-1 font-display">+$400</div>
+          <div class="flex items-center gap-1 mt-0.5"><span class="pill" style="background:rgba(0,212,170,0.12);color:#00D4AA;font-size:10px;">MNQ</span></div>
+        </div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">13</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">14</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">15</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">16</div></div>
+      </div>
+
+      <!-- Week row: Mar 17 - 23 -->
+      <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">17</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">18</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">19</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">20</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">21</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">22</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">23</div></div>
+      </div>
+
+      <!-- Week row: Mar 24 - 30 -->
+      <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">24</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">25</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">26</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">27</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">28</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">29</div></div>
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">30</div></div>
+      </div>
+
+      <!-- Week row: Mar 31 -->
+      <div class="grid grid-cols-7 gap-1.5">
+        <div class="cal-day empty"><div class="text-[12px] text-label-tertiary">31</div></div>
+        <div class="cal-day empty opacity-0"></div>
+        <div class="cal-day empty opacity-0"></div>
+        <div class="cal-day empty opacity-0"></div>
+        <div class="cal-day empty opacity-0"></div>
+        <div class="cal-day empty opacity-0"></div>
+        <div class="cal-day empty opacity-0"></div>
+      </div>
+    </div>
+
+    <!-- MONTHLY SUMMARY STATS -->
+    <div class="grid grid-cols-6 gap-2 mb-3">
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Month P&L</div>
+        <div class="font-display text-xl font-bold tabular-nums gain-text leading-tight">+$1,002</div>
+        <div class="text-[11px] text-label-tertiary tabular-nums mt-0.5">5 trading days</div>
+      </div>
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Trades</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">5</div>
+        <div class="text-[11px] text-label-tertiary tabular-nums mt-0.5">across 5 sessions</div>
+      </div>
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Win Rate</div>
+        <div class="font-display text-xl font-bold tabular-nums text-label-primary leading-tight">80<span class="text-sm text-label-tertiary">%</span></div>
+        <div class="text-[11px] text-label-tertiary tabular-nums mt-0.5">4W / 1L</div>
+      </div>
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Best Day</div>
+        <div class="font-display text-xl font-bold tabular-nums gain-text leading-tight">+$400</div>
+        <div class="text-[11px] text-label-tertiary mt-0.5">Mar 9, 11, 12</div>
+      </div>
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Worst Day</div>
+        <div class="font-display text-xl font-bold tabular-nums loss-text leading-tight">-$200</div>
+        <div class="text-[11px] text-label-tertiary mt-0.5">Mar 10</div>
+      </div>
+      <div class="tile px-4 py-3">
+        <div class="tile-header pb-1">Avg P&L/Day</div>
+        <div class="font-display text-xl font-bold tabular-nums gain-text leading-tight">+$200</div>
+        <div class="text-[11px] text-label-tertiary mt-0.5">per trading day</div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-1 pt-1.5 border-t border-void-300 flex items-center justify-between px-1">
+      <span class="text-[10px] text-label-tertiary">TradeLog v1.0</span>
+      <div class="flex items-center gap-3">
+        <span class="text-[10px] text-label-tertiary tabular-nums">Last Import: Mar 22, 2026</span>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-gain"></div>
+          <span class="text-[10px] text-label-tertiary">Connected</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

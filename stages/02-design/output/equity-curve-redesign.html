@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Equity Curve Redesign — Split Cockpit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #06080C;
+      font-family: 'Sora', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    .card {
+      background: #141820;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 840px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 0 18px;
+    }
+    .card-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8B95A8;
+    }
+    .card-subtitle {
+      font-family: 'Sora', sans-serif;
+      font-size: 10px;
+      color: #4A5568;
+      margin-left: 10px;
+    }
+    .toggle-group {
+      display: flex;
+      gap: 2px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .toggle-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #4A5568;
+      background: transparent;
+    }
+    .toggle-btn.active {
+      color: #E8ECF2;
+      background: rgba(45, 212, 191, 0.12);
+    }
+    .toggle-btn:hover:not(.active) {
+      color: #8B95A8;
+    }
+    .chart-container {
+      padding: 4px 12px 10px 12px;
+      height: 320px;
+    }
+
+    /* Comparison: old version side by side label */
+    .version-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4A5568;
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <div style="width: 100%; max-width: 840px;">
+    <!-- REDESIGNED VERSION -->
+    <div class="version-label" style="color: #2DD4BF; margin-bottom: 6px;">Redesigned — Split Cockpit</div>
+    <div class="card" id="redesign">
+      <div class="card-header">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <span class="card-title">Equity Curve</span>
+          <span class="card-subtitle">Cumulative P&L</span>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn" data-range="1M" onclick="setRange('1M', this)">1M</button>
+          <button class="toggle-btn active" data-range="ALL" onclick="setRange('ALL', this)">ALL</button>
+        </div>
+      </div>
+      <div class="chart-container" id="chart-new"></div>
+    </div>
+
+    <!-- OLD VERSION FOR COMPARISON -->
+    <div class="version-label" style="margin-top: 40px; margin-bottom: 6px;">Current — Midnight (for comparison)</div>
+    <div style="background: #161B22; border: 1px solid rgba(92,92,122,0.12); border-radius: 6px; width: 100%; overflow: hidden;" id="old-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 12px 2px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Fira Code', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6E7681;">Equity Curve</span>
+          <span style="font-size: 10px; color: #6E7681;">Cumulative P&L</span>
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <button style="font-size: 10px; color: #6E7681; background: transparent; border: none; padding: 2px 8px; border-radius: 4px;">1M</button>
+          <button style="font-size: 10px; color: #E6EDF3; background: rgba(0,212,170,0.15); border: none; padding: 2px 8px; border-radius: 4px;">ALL</button>
+        </div>
+      </div>
+      <div style="padding: 4px 12px 8px; height: 320px;" id="chart-old"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Sample data: realistic equity curve with drawdowns ---
+    function generateEquityData() {
+      const data = [];
+      let cumPnl = 0;
+      const startDate = new Date('2025-10-01');
+
+      // Realistic: starts rough (goes negative), finds footing, climbs with drawdowns
+      const dailyPnL = [
+        -180, 60, -250, -90, 40, -120, 75, -200, 30, -60,
+        110, -35, 180, -80, 45, 95, -150, 200, 60, -40,
+        130, 85, -30, 175, -65, 220, 50, -90, 160, 40,
+        -55, 195, 70, 130, -40, 250, -100, 80, 145, -70,
+        190, 55, -160, 100, 230, -45, 75, 120, -350, -120,
+        -80, 140, 85, -35, 200, 110, -50, 165, 70, 185,
+        95, -120, 55, 210, -40, 130, 80, -65, 175, 240,
+        -30, 90, 150, -85, 60, 195, -150, 45, 110, 170,
+        -55, 80, 135, -40, 225, 65, -90, 155, 100, 180,
+        70, -35, 145, 85, 210, -60, 120, 160, -45, 95
+      ];
+
+      for (let i = 0; i < dailyPnL.length; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        // Skip weekends
+        const dow = date.getDay();
+        if (dow === 0 || dow === 6) continue;
+
+        cumPnl += dailyPnL[i];
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        data.push({ time: `${yyyy}-${mm}-${dd}`, value: cumPnl });
+      }
+      return data;
+    }
+
+    const sampleData = generateEquityData();
+
+    // --- NEW CHART (Redesigned) ---
+    const newChart = LightweightCharts.createChart(document.getElementById('chart-new'), {
+      width: document.getElementById('chart-new').clientWidth,
+      height: 310,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: '#4A5568',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 10,
+        attributionLogo: false,
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { color: 'rgba(255,255,255,0.05)', style: LightweightCharts.LineStyle.Solid },
+      },
+      rightPriceScale: {
+        borderColor: 'transparent',
+        scaleMargins: { top: 0.08, bottom: 0.08 },
+      },
+      timeScale: {
+        borderColor: 'transparent',
+        timeVisible: false,
+      },
+      crosshair: {
+        vertLine: { color: 'rgba(45,212,191,0.15)', width: 1, style: LightweightCharts.LineStyle.Solid, labelVisible: false },
+        horzLine: { color: 'rgba(45,212,191,0.15)', width: 1, style: LightweightCharts.LineStyle.Solid, labelVisible: false },
+      },
+      handleScroll: false,
+      handleScale: false,
+    });
+
+    const newSeries = newChart.addBaselineSeries({
+      baseValue: { type: 'price', price: 0 },
+      topLineColor: '#10B981',
+      topFillColor1: 'rgba(16,185,129,0.22)',
+      topFillColor2: 'rgba(16,185,129,0.02)',
+      bottomLineColor: '#EF4444',
+      bottomFillColor1: 'rgba(239,68,68,0.02)',
+      bottomFillColor2: 'rgba(239,68,68,0.18)',
+      lineWidth: 1.5,
+      lastValueVisible: false,
+      priceLineVisible: false,
+      priceFormat: {
+        type: 'custom',
+        formatter: (price) => {
+          const abs = Math.abs(price);
+          const prefix = price >= 0 ? '$' : '-$';
+          if (abs >= 1000) return `${prefix}${(abs / 1000).toFixed(1)}k`;
+          return `${prefix}${Math.round(abs)}`;
+        },
+      },
+    });
+    newSeries.setData(sampleData);
+
+    // Subtle zero-line reference
+    newSeries.createPriceLine({
+      price: 0,
+      color: 'rgba(255,255,255,0.08)',
+      lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Solid,
+      axisLabelVisible: false,
+    });
+
+    newChart.timeScale().fitContent();
+
+    // --- OLD CHART (for comparison) ---
+    const oldChart = LightweightCharts.createChart(document.getElementById('chart-old'), {
+      width: document.getElementById('chart-old').clientWidth,
+      height: 310,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: '#6E7681',
+        fontFamily: "'Fira Code', monospace",
+        fontSize: 9,
+        attributionLogo: false,
+      },
+      grid: {
+        vertLines: { color: '#1C2128', style: LightweightCharts.LineStyle.Solid },
+        horzLines: { color: '#1C2128', style: LightweightCharts.LineStyle.Solid },
+      },
+      rightPriceScale: {
+        borderColor: 'transparent',
+        scaleMargins: { top: 0.05, bottom: 0.05 },
+      },
+      timeScale: {
+        borderColor: 'transparent',
+        timeVisible: false,
+      },
+      crosshair: {
+        vertLine: { color: 'rgba(110,118,129,0.25)', width: 1, style: LightweightCharts.LineStyle.Solid, labelVisible: false },
+        horzLine: { color: 'rgba(110,118,129,0.25)', width: 1, style: LightweightCharts.LineStyle.Solid, labelVisible: false },
+      },
+      handleScroll: false,
+      handleScale: false,
+    });
+
+    const oldSeries = oldChart.addBaselineSeries({
+      baseValue: { type: 'price', price: 0 },
+      topLineColor: '#00D4AA',
+      topFillColor1: 'rgba(0,212,170,0.35)',
+      topFillColor2: 'rgba(0,212,170,0.05)',
+      bottomLineColor: '#EF4444',
+      bottomFillColor1: 'rgba(239,68,68,0.05)',
+      bottomFillColor2: 'rgba(239,68,68,0.35)',
+      lineWidth: 2,
+      lastValueVisible: true,
+      priceLineVisible: true,
+      priceFormat: {
+        type: 'custom',
+        formatter: (price) => {
+          const abs = Math.abs(price);
+          const prefix = price >= 0 ? '$' : '-$';
+          if (abs >= 1000) return `${prefix}${(abs / 1000).toFixed(1)}k`;
+          return `${prefix}${Math.round(abs)}`;
+        },
+      },
+    });
+    oldSeries.setData(sampleData);
+    oldChart.timeScale().fitContent();
+
+    // --- Resize ---
+    window.addEventListener('resize', () => {
+      const newContainer = document.getElementById('chart-new');
+      const oldContainer = document.getElementById('chart-old');
+      newChart.applyOptions({ width: newContainer.clientWidth });
+      oldChart.applyOptions({ width: oldContainer.clientWidth });
+    });
+
+    // --- Toggle range ---
+    function setRange(range, btn) {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (range === '1M') {
+        const lastDate = new Date(sampleData[sampleData.length - 1].time);
+        const oneMonthAgo = new Date(lastDate);
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const cutoff = oneMonthAgo.toISOString().slice(0, 10);
+        const filtered = sampleData.filter(p => p.time >= cutoff);
+        newSeries.setData(filtered);
+      } else {
+        newSeries.setData(sampleData);
+      }
+      newChart.timeScale().fitContent();
+    }
+  </script>
+</body>
+</html>

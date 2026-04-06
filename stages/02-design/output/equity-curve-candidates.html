@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equity Curve Candidates — Trading Journal v11</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: #0D1117; font-family: 'Space Grotesk', sans-serif; }
+    .mono { font-family: 'Fira Code', monospace; }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <!-- Header -->
+  <div class="max-w-[1300px] mx-auto mb-8">
+    <h1 class="text-2xl font-bold text-white mb-1" style="font-family: 'Space Grotesk', sans-serif;">Equity Curve Style Candidates</h1>
+    <p class="text-sm text-gray-500 mono">Trading Journal v11 — Split Cockpit Design System</p>
+  </div>
+
+  <!-- 2x2 Grid -->
+  <div class="max-w-[1300px] mx-auto grid grid-cols-2 gap-6">
+
+    <!-- A. Clean Smooth -->
+    <div class="rounded-xl border border-gray-800 bg-[#161B22] p-5">
+      <div class="flex items-baseline gap-3 mb-4">
+        <span class="text-xs font-bold text-[#00D4AA] mono">A</span>
+        <span class="text-sm font-semibold text-white">Clean Smooth</span>
+        <span class="text-xs text-gray-500 mono ml-auto">Bloomberg terminal</span>
+      </div>
+      <svg id="chart-a" viewBox="0 0 600 280" class="w-full" style="max-width:600px; height:auto;"></svg>
+    </div>
+
+    <!-- B. Gradient Glow -->
+    <div class="rounded-xl border border-gray-800 bg-[#161B22] p-5">
+      <div class="flex items-baseline gap-3 mb-4">
+        <span class="text-xs font-bold text-[#00D4AA] mono">B</span>
+        <span class="text-sm font-semibold text-white">Gradient Glow</span>
+        <span class="text-xs text-gray-500 mono ml-auto">Fintech app</span>
+      </div>
+      <svg id="chart-b" viewBox="0 0 600 280" class="w-full" style="max-width:600px; height:auto;"></svg>
+    </div>
+
+    <!-- C. Area Fill -->
+    <div class="rounded-xl border border-gray-800 bg-[#161B22] p-5">
+      <div class="flex items-baseline gap-3 mb-4">
+        <span class="text-xs font-bold text-[#00D4AA] mono">C</span>
+        <span class="text-sm font-semibold text-white">Area Fill</span>
+        <span class="text-xs text-gray-500 mono ml-auto">TradingView style</span>
+      </div>
+      <svg id="chart-c" viewBox="0 0 600 280" class="w-full" style="max-width:600px; height:auto;"></svg>
+    </div>
+
+    <!-- D. Dual Tone -->
+    <div class="rounded-xl border border-gray-800 bg-[#161B22] p-5">
+      <div class="flex items-baseline gap-3 mb-4">
+        <span class="text-xs font-bold text-[#00D4AA] mono">D</span>
+        <span class="text-sm font-semibold text-white">Dual Tone</span>
+        <span class="text-xs text-gray-500 mono ml-auto">Drawdown visualizer</span>
+      </div>
+      <svg id="chart-d" viewBox="0 0 600 280" class="w-full" style="max-width:600px; height:auto;"></svg>
+    </div>
+
+  </div>
+
+  <script>
+    // ============================================================
+    // Shared data & layout constants
+    // ============================================================
+    const COLORS = { teal: '#00D4AA', red: '#EF4444', bg: '#0D1117', card: '#161B22' };
+
+    // Cumulative P&L data points (Nov 2025 – Mar 2026)
+    // x = index, y = cumulative P&L in $
+    const rawData = [
+      { label: 'Nov 1',  y: 265 },
+      { label: 'Nov 15', y: 410 },
+      { label: 'Dec 1',  y: 320 },
+      { label: 'Dec 15', y: -120 },
+      { label: 'Jan 1',  y: -397 },  // max drawdown
+      { label: 'Jan 15', y: -180 },
+      { label: 'Feb 1',  y: 150 },
+      { label: 'Feb 15', y: 620 },
+      { label: 'Mar 1',  y: 1350 },
+      { label: 'Mar 15', y: 1780 },
+      { label: 'Mar 31', y: 2100 },
+    ];
+
+    // Chart area inside SVG
+    const PAD = { top: 20, right: 20, bottom: 35, left: 55 };
+    const W = 600, H = 280;
+    const cw = W - PAD.left - PAD.right;
+    const ch = H - PAD.top - PAD.bottom;
+
+    // Y range
+    const yMin = -500, yMax = 2600;
+    const yRange = yMax - yMin;
+
+    function sx(i) { return PAD.left + (i / (rawData.length - 1)) * cw; }
+    function sy(v) { return PAD.top + (1 - (v - yMin) / yRange) * ch; }
+
+    // Build smooth cubic bezier path
+    function smoothPath(points) {
+      if (points.length < 2) return '';
+      let d = `M${points[0].x},${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[Math.max(i - 1, 0)];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[Math.min(i + 2, points.length - 1)];
+        const tension = 0.3;
+        const cp1x = p1.x + (p2.x - p0.x) * tension;
+        const cp1y = p1.y + (p2.y - p0.y) * tension;
+        const cp2x = p2.x - (p3.x - p1.x) * tension;
+        const cp2y = p2.y - (p3.y - p1.y) * tension;
+        d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+      }
+      return d;
+    }
+
+    const pts = rawData.map((d, i) => ({ x: sx(i), y: sy(d.y) }));
+    const linePath = smoothPath(pts);
+
+    // Zero line Y
+    const zeroY = sy(0);
+
+    // Y-axis ticks
+    const yTicks = [
+      { v: 2500, label: '$2.5k' },
+      { v: 2000, label: '$2k' },
+      { v: 1000, label: '$1k' },
+      { v: 500, label: '$500' },
+      { v: 0, label: '$0' },
+      { v: -400, label: '-$400' },
+    ];
+
+    // X-axis ticks (month starts)
+    const xTicks = [
+      { i: 0, label: 'Nov' },
+      { i: 2, label: 'Dec' },
+      { i: 4, label: 'Jan' },
+      { i: 6, label: 'Feb' },
+      { i: 8, label: 'Mar' },
+    ];
+
+    // Max drawdown point (index 4, -$397)
+    const ddIdx = 4;
+    const ddPt = pts[ddIdx];
+
+    // ============================================================
+    // Shared SVG scaffolding
+    // ============================================================
+    function axesMarkup() {
+      let s = '';
+      // Grid lines + y labels
+      yTicks.forEach(t => {
+        const y = sy(t.v);
+        const color = t.v === 0 ? '#30363D' : '#1C2128';
+        const width = t.v === 0 ? 1 : 0.5;
+        s += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="${color}" stroke-width="${width}" ${t.v === 0 ? 'stroke-dasharray="4,3"' : ''}/>`;
+        s += `<text x="${PAD.left - 8}" y="${y + 4}" text-anchor="end" fill="#6B7280" font-size="10" font-family="'Fira Code', monospace">${t.label}</text>`;
+      });
+      // X labels
+      xTicks.forEach(t => {
+        const x = sx(t.i);
+        s += `<text x="${x}" y="${H - 8}" text-anchor="middle" fill="#6B7280" font-size="10" font-family="'Fira Code', monospace">${t.label}</text>`;
+      });
+      return s;
+    }
+
+    function drawdownMarker() {
+      return `
+        <circle cx="${ddPt.x}" cy="${ddPt.y}" r="3.5" fill="${COLORS.red}" />
+        <text x="${ddPt.x + 8}" y="${ddPt.y - 8}" fill="${COLORS.red}" font-size="10" font-family="'Fira Code', monospace">-$397</text>
+      `;
+    }
+
+    // ============================================================
+    // A. Clean Smooth
+    // ============================================================
+    (() => {
+      const svg = document.getElementById('chart-a');
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${COLORS.teal}" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="${COLORS.teal}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${axesMarkup()}
+        <path d="${linePath} L${pts[pts.length-1].x},${sy(yMin)} L${pts[0].x},${sy(yMin)} Z" fill="url(#gradA)" />
+        <path d="${linePath}" fill="none" stroke="${COLORS.teal}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${drawdownMarker()}
+      `;
+    })();
+
+    // ============================================================
+    // B. Gradient Glow
+    // ============================================================
+    (() => {
+      const svg = document.getElementById('chart-b');
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gradB" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${COLORS.teal}" stop-opacity="0.35"/>
+            <stop offset="70%" stop-color="${COLORS.teal}" stop-opacity="0.05"/>
+            <stop offset="100%" stop-color="${COLORS.card}" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="glowB" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        ${axesMarkup()}
+        <path d="${linePath} L${pts[pts.length-1].x},${sy(yMin)} L${pts[0].x},${sy(yMin)} Z" fill="url(#gradB)" />
+        <path d="${linePath}" fill="none" stroke="${COLORS.teal}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" filter="url(#glowB)"/>
+        ${drawdownMarker()}
+      `;
+    })();
+
+    // ============================================================
+    // C. Area Fill
+    // ============================================================
+    (() => {
+      const svg = document.getElementById('chart-c');
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gradC" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${COLORS.teal}" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="${COLORS.teal}" stop-opacity="0.12"/>
+          </linearGradient>
+        </defs>
+        ${axesMarkup()}
+        <path d="${linePath} L${pts[pts.length-1].x},${sy(yMin)} L${pts[0].x},${sy(yMin)} Z" fill="url(#gradC)" />
+        <path d="${linePath}" fill="none" stroke="${COLORS.teal}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${drawdownMarker()}
+      `;
+    })();
+
+    // ============================================================
+    // D. Dual Tone
+    // ============================================================
+    (() => {
+      const svg = document.getElementById('chart-d');
+
+      // We need to split the fill at the zero line.
+      // Use clip paths: one clips above zero, one clips below.
+      svg.innerHTML = `
+        <defs>
+          <clipPath id="clipAbove">
+            <rect x="${PAD.left}" y="${PAD.top}" width="${cw}" height="${zeroY - PAD.top}" />
+          </clipPath>
+          <clipPath id="clipBelow">
+            <rect x="${PAD.left}" y="${zeroY}" width="${cw}" height="${H - PAD.bottom - zeroY}" />
+          </clipPath>
+          <linearGradient id="gradDTeal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${COLORS.teal}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="${COLORS.teal}" stop-opacity="0.05"/>
+          </linearGradient>
+          <linearGradient id="gradDRed" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="${COLORS.red}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="${COLORS.red}" stop-opacity="0.05"/>
+          </linearGradient>
+        </defs>
+        ${axesMarkup()}
+        <!-- Teal fill above zero -->
+        <path d="${linePath} L${pts[pts.length-1].x},${zeroY} L${pts[0].x},${zeroY} Z" fill="url(#gradDTeal)" clip-path="url(#clipAbove)" />
+        <!-- Red fill below zero -->
+        <path d="${linePath} L${pts[pts.length-1].x},${zeroY} L${pts[0].x},${zeroY} Z" fill="url(#gradDRed)" clip-path="url(#clipBelow)" />
+        <!-- Teal line above zero -->
+        <path d="${linePath}" fill="none" stroke="${COLORS.teal}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipAbove)"/>
+        <!-- Red line below zero -->
+        <path d="${linePath}" fill="none" stroke="${COLORS.red}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipBelow)"/>
+        ${drawdownMarker()}
+      `;
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Import Modal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT:'#0D1117',50:'#0D1117',100:'#161B22',150:'#131920',200:'#161B22',300:'#21262D',400:'#262C36',500:'#2D333B',600:'#3D444D',700:'#484F58' },
+            neon: { DEFAULT:'#00D4AA',bright:'#33DDBB',dim:'#00B894',muted:'#009D7E',subtle:'rgba(0,212,170,0.12)',ring:'rgba(0,212,170,0.25)' },
+            gain: { DEFAULT:'#34D399',bright:'#6EE7B7',dim:'#10B981',bg:'rgba(52,211,153,0.06)' },
+            loss: { DEFAULT:'#EF4444',bright:'#F87171',dim:'#DC2626',bg:'rgba(239,68,68,0.06)' },
+            flat: { DEFAULT:'#6E7681',bg:'rgba(48,54,61,0.10)' },
+            label: { primary:'#E6EDF3',secondary:'#8B949E',tertiary:'#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Fira Code',monospace;-webkit-font-smoothing:antialiased;background:#0D1117;color:#E6EDF3}
+    .font-display{font-family:'Space Grotesk',sans-serif}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .tile{background:#161B22;border:1px solid rgba(48,54,61,0.12);border-radius:6px}
+    .tile-header{font-family:'Fira Code',monospace;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#6E7681}
+    .gain-text{color:#34D399}.loss-text{color:#EF4444}.neon-text{color:#00D4AA}.warn-text{color:#FFD600}
+    .pill{font-size:10px;font-weight:600;padding:1px 6px;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block}
+    .nav-link{color:#6E7681;font-size:12px;letter-spacing:0.02em;cursor:pointer;transition:color 0.15s}
+    .nav-link:hover{color:#8B949E}
+    .nav-link.active{color:#E6EDF3;background:rgba(0,212,170,0.12);padding:4px 10px;border-radius:4px}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#21262D;border-radius:2px}
+    .btn-primary{background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;padding:6px 16px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+    .btn-primary:hover{background:#33DDBB;border-color:#33DDBB}
+    .btn-secondary{background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);color:#8B949E;padding:6px 16px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+    .btn-secondary:hover{color:#E6EDF3;border-color:rgba(48,54,61,0.30)}
+    .backdrop{position:fixed;inset:0;background:rgba(13,17,23,0.75);z-index:40}
+    .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;width:700px;max-width:90vw;max-height:85vh;overflow-y:auto;background:#161B22;border:1px solid rgba(48,54,61,0.20);border-radius:8px}
+    .drop-zone{border:2px dashed rgba(48,54,61,0.25);border-radius:6px;padding:16px;text-align:center;transition:all 0.2s;cursor:pointer}
+    .drop-zone:hover{border-color:rgba(0,212,170,0.35);background:rgba(0,212,170,0.03)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP NAV (dimmed behind modal) -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background:rgba(13,17,23,0.95)">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link active">Dashboard</span>
+        <span class="nav-link px-2.5 py-1">Calendar</span>
+        <span class="nav-link px-2.5 py-1">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>TOPSTEP X</span>
+        <span class="text-void-500">|</span>
+        <span>84 trades</span>
+        <span class="text-void-500">|</span>
+        <span>Nov 2025 – Mar 2026</span>
+      </div>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;cursor:pointer;">+ Import CSV</button>
+    </div>
+  </header>
+
+  <!-- Dashboard content behind (dimmed) -->
+  <main class="p-3 w-full max-w-[1280px] mx-auto opacity-30 pointer-events-none" aria-hidden="true">
+    <div class="grid grid-cols-7 gap-2 mb-3">
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Net P&L</div><div class="font-display text-2xl font-bold tabular-nums gain-text">+$2,100</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Win Rate</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">41.7%</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Profit Factor</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">1.38x</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Avg Win/Loss</div><div class="font-display text-lg font-bold tabular-nums gain-text">$220/$114</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Total Trades</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">84</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Max DD</div><div class="font-display text-2xl font-bold tabular-nums loss-text">-$397</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Avg Duration</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">18m</div></div>
+    </div>
+    <div class="grid grid-cols-12 gap-2">
+      <div class="tile col-span-8 h-[240px]"></div>
+      <div class="tile col-span-4 h-[240px]"></div>
+    </div>
+  </main>
+
+  <!-- BACKDROP -->
+  <div class="backdrop"></div>
+
+  <!-- IMPORT MODAL -->
+  <div class="modal p-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h2 class="font-display text-lg font-bold text-label-primary">Import Trades</h2>
+        <p class="text-[11px] text-label-tertiary mt-0.5">Upload a CSV export from Topstep X.</p>
+      </div>
+      <button class="text-label-tertiary hover:text-label-primary cursor-pointer" style="font-size:20px;line-height:1;">&times;</button>
+    </div>
+
+    <!-- Drag-and-drop zone -->
+    <div class="drop-zone mb-3">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" class="mx-auto mb-1.5">
+        <path d="M16 4V20M16 20L10 14M16 20L22 14" stroke="#6E7681" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 22V26C4 27.1046 4.89543 28 6 28H26C27.1046 28 28 27.1046 28 26V22" stroke="#6E7681" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="font-display text-[12px] text-label-secondary font-medium">Drag and drop your CSV file here</div>
+      <div class="text-[10px] text-label-tertiary">or <span class="neon-text cursor-pointer">browse files</span> &middot; Accepts .csv from Topstep X</div>
+    </div>
+
+    <!-- CSV PREVIEW (showing what it looks like after file is selected) -->
+    <div class="mb-3">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-display font-semibold text-label-primary">Preview</span>
+          <span class="pill gain-text" style="background:rgba(52,211,153,0.10);">topstep_trades_mar2026.csv</span>
+        </div>
+        <span class="text-[10px] text-label-tertiary tabular-nums">12 rows detected</span>
+      </div>
+      <div class="rounded overflow-hidden" style="border:1px solid rgba(48,54,61,0.12);">
+        <table class="w-full text-[10px]">
+          <thead>
+            <tr style="background:rgba(22,27,34,0.8);">
+              <th class="text-left font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">Trade Id</th>
+              <th class="text-left font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">Account</th>
+              <th class="text-left font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">Contract</th>
+              <th class="text-left font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">Side</th>
+              <th class="text-right font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">P&L</th>
+              <th class="text-left font-medium px-3 py-2 text-label-tertiary text-[10px] uppercase tracking-wider">Trade Day</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t" style="border-color:rgba(48,54,61,0.08);">
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">TRD-8842</td>
+              <td class="px-3 py-1.5 text-label-tertiary">TSX-150K</td>
+              <td class="px-3 py-1.5"><span class="pill" style="background:rgba(0,212,170,0.12);color:#00D4AA;">MNQ</span></td>
+              <td class="px-3 py-1.5 gain-text">Long</td>
+              <td class="px-3 py-1.5 text-right tabular-nums gain-text font-medium">+$400.00</td>
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">2026-03-12</td>
+            </tr>
+            <tr class="border-t" style="border-color:rgba(48,54,61,0.08);">
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">TRD-8841</td>
+              <td class="px-3 py-1.5 text-label-tertiary">TSX-150K</td>
+              <td class="px-3 py-1.5"><span class="pill" style="background:rgba(0,212,170,0.12);color:#00D4AA;">MNQ</span></td>
+              <td class="px-3 py-1.5 gain-text">Long</td>
+              <td class="px-3 py-1.5 text-right tabular-nums gain-text font-medium">+$400.00</td>
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">2026-03-11</td>
+            </tr>
+            <tr class="border-t" style="border-color:rgba(48,54,61,0.08);">
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">TRD-8840</td>
+              <td class="px-3 py-1.5 text-label-tertiary">TSX-150K</td>
+              <td class="px-3 py-1.5"><span class="pill" style="background:rgba(48,54,61,0.12);color:#8B949E;">MYM</span></td>
+              <td class="px-3 py-1.5 loss-text">Short</td>
+              <td class="px-3 py-1.5 text-right tabular-nums loss-text font-medium">-$200.00</td>
+              <td class="px-3 py-1.5 tabular-nums text-label-secondary">2026-03-10</td>
+            </tr>
+            <tr class="border-t" style="border-color:rgba(48,54,61,0.08);">
+              <td class="px-3 py-1.5 tabular-nums text-label-tertiary" colspan="6">... 9 more rows</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IMPORT SUMMARY -->
+    <div class="rounded px-3 py-2 mb-3" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.12);">
+      <div class="flex items-center gap-6">
+        <div class="text-[10px] font-display font-semibold text-label-secondary uppercase tracking-wider">Import Summary</div>
+        <div class="flex items-center gap-5">
+          <div class="flex items-center gap-1.5"><span class="text-[10px] text-label-tertiary">New trades</span><span class="text-[12px] font-bold tabular-nums gain-text font-display">8</span></div>
+          <div class="flex items-center gap-1.5"><span class="text-[10px] text-label-tertiary">Duplicates</span><span class="text-[12px] font-bold tabular-nums text-label-tertiary font-display">4</span></div>
+          <div class="flex items-center gap-1.5"><span class="text-[10px] text-label-tertiary">Sessions</span><span class="text-[12px] font-bold tabular-nums text-label-primary font-display">5</span></div>
+          <div class="flex items-center gap-1.5"><span class="text-[10px] text-label-tertiary">Range</span><span class="text-[10px] font-medium tabular-nums text-label-secondary font-display">Mar 6 – Mar 12</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="flex items-center justify-between mb-3">
+      <button class="btn-secondary">Cancel</button>
+      <button class="btn-primary">
+        <span class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 14V2M8 14L4 10M8 14L12 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Import 8 Trades
+        </span>
+      </button>
+    </div>
+
+    <!-- IMPORT HISTORY -->
+    <div class="border-t pt-2.5" style="border-color:rgba(48,54,61,0.12);">
+      <div class="text-[10px] font-display font-semibold text-label-secondary uppercase tracking-wider mb-2">Import History</div>
+      <div class="space-y-1">
+        <div class="flex items-center justify-between py-1 border-b" style="border-color:rgba(48,54,61,0.08);">
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] tabular-nums text-label-secondary">Mar 22, 2026</span>
+            <span class="text-[10px] text-label-tertiary">topstep_export_mar22.csv</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] tabular-nums text-label-secondary">12 trades</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10);">SUCCESS</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] tabular-nums text-label-secondary">Feb 15, 2026</span>
+            <span class="text-[10px] text-label-tertiary">topstep_export_feb15.csv</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] tabular-nums text-label-secondary">18 trades</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10);">SUCCESS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

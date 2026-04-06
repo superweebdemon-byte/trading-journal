@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendar Redesign — Trading Journal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #0D1117;
+    color: #E6EDF3;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .font-mono { font-family: 'Fira Code', monospace; }
+  .cell-green { background: rgba(52,211,153,0.10); }
+  .cell-red { background: rgba(239,68,68,0.15); }
+  .cell-empty { background: #161B22; }
+  .cell-outside { background: rgba(13,17,23,0.7); }
+  .weekly-summary { background: #161B22; border-left: 2px solid rgba(0,212,170,0.2); }
+  .weekly-summary-green { background: rgba(52,211,153,0.05); border-left: 2px solid rgba(52,211,153,0.3); }
+  .weekly-summary-red { background: rgba(239,68,68,0.05); border-left: 2px solid rgba(239,68,68,0.25); }
+  .nav-active {
+    background: rgba(0,212,170,0.15);
+    color: #00D4AA;
+    border-radius: 6px;
+    padding: 4px 12px;
+  }
+  .nav-item {
+    padding: 4px 12px;
+    color: #6E7681;
+    transition: color 0.15s;
+    cursor: pointer;
+  }
+  .nav-item:hover { color: #E6EDF3; }
+  .kpi-card {
+    background: #161B22;
+    border: 1px solid rgba(92,92,122,0.12);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .calendar-cell {
+    border: 1px solid rgba(92,92,122,0.12);
+    padding: 8px 10px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .calendar-cell:hover { border-color: rgba(0,212,170,0.3); }
+  .month-header {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+  }
+  .day-header {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    color: #6E7681;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 6px 0;
+    text-align: center;
+  }
+  .arrow-btn {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    border: 1px solid rgba(92,92,122,0.2);
+    background: #161B22;
+    color: #6E7681;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+  }
+  .arrow-btn:hover { border-color: #00D4AA; color: #00D4AA; }
+  .today-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(92,92,122,0.2);
+    background: #161B22;
+    color: #6E7681;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .today-btn:hover { border-color: #00D4AA; color: #00D4AA; }
+  .day-num { font-size: 12px; color: #6E7681; }
+  .day-num-outside { font-size: 12px; color: #3B4048; }
+  .trade-count { font-size: 10px; color: #6E7681; }
+  .pnl-amount { font-size: 15px; font-weight: 600; }
+  .daily-trading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+  }
+  .daily-day-num {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 12px;
+    color: #6E7681;
+  }
+  .daily-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6E7681;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .daily-pnl {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .daily-trades {
+    font-size: 10px;
+    color: #6E7681;
+    margin-top: 2px;
+  }
+  .pnl-green { color: #34D399; }
+  .pnl-red { color: #EF4444; }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<nav style="background: #161B22; border-bottom: 1px solid rgba(92,92,122,0.12); padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+  <div style="display: flex; align-items: center; gap: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#00D4AA;display:inline-block;"></span>
+      <span style="font-weight: 700; font-size: 15px; color: #E6EDF3;">TradeLog</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <span class="nav-item">Dashboard</span>
+      <span class="nav-active" style="font-weight:500;">Calendar</span>
+      <span class="nav-item">Sessions</span>
+      <span class="nav-item">Settings</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 14px; font-size: 12px; color: #6E7681;">
+    <span>TOPSTEP X</span>
+    <span style="color: rgba(92,92,122,0.4);">|</span>
+    <span>84 trades</span>
+    <span style="color: rgba(92,92,122,0.4);">|</span>
+    <span>Nov 2025 &ndash; Mar 2026</span>
+    <button style="background: #00D4AA; color: #0D1117; border: none; padding: 5px 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif;">+ Import CSV</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main style="flex: 1; padding: 12px 24px 8px; display: flex; flex-direction: column; min-height: 0;">
+
+  <!-- MONTHLY P/L + MONTH NAV ROW -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="arrow-btn">&larr;</button>
+      <span class="month-header">Feb 2026</span>
+      <button class="arrow-btn">&rarr;</button>
+    </div>
+    <button class="today-btn">Today</button>
+  </div>
+
+  <!-- CALENDAR GRID -->
+  <div style="display: grid; grid-template-columns: repeat(6, 1fr) 175px; grid-template-rows: auto repeat(5, 1fr); background: rgba(92,92,122,0.06); border-radius: 8px; overflow: hidden; border: 1px solid rgba(92,92,122,0.12); flex: 1; min-height: 0;">
+
+    <!-- DAY HEADERS -->
+    <div class="day-header">Su</div>
+    <div class="day-header">Mo</div>
+    <div class="day-header">Tu</div>
+    <div class="day-header">We</div>
+    <div class="day-header">Th</div>
+    <div class="day-header">Fr</div>
+    <div class="day-header" style="border-left: 2px solid rgba(0,212,170,0.15);">Sa</div>
+
+    <!-- WEEK 1: Feb 1 (Sun) - Feb 7 (Sat) -->
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">1</span>
+    </div>
+    <div class="calendar-cell cell-green">
+      <span class="daily-day-num">2</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-green">+$397.04</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">3</span>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">4</span>
+    </div>
+    <div class="calendar-cell cell-green">
+      <span class="daily-day-num">5</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-green">+$393.56</span>
+        <span class="font-mono daily-trades">2 trades</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-green">
+      <span class="daily-day-num">6</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-green">+$399.76</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <!-- Week 1 Summary -->
+    <div class="calendar-cell weekly-summary-green" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <span class="day-num" style="position:absolute; top:8px; left:10px;">7</span>
+      <span style="font-size: 10px; font-weight: 600; color: #6E7681; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;">Week 1</span>
+      <span class="font-mono" style="font-size: 16px; font-weight: 600; color: #34D399;">+$1,190.36</span>
+      <span class="font-mono" style="font-size: 10px; color: #6E7681; margin-top: 2px;">4 trades</span>
+    </div>
+
+    <!-- WEEK 2: Feb 8 (Sun) - Feb 14 (Sat) -->
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">8</span>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">9</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$400.88</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">10</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$202.44</span>
+        <span class="font-mono daily-trades">2 trades</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">11</span>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">12</span>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">13</span>
+    </div>
+    <!-- Week 2 Summary -->
+    <div class="calendar-cell weekly-summary-red" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <span class="day-num" style="position:absolute; top:8px; left:10px;">14</span>
+      <span style="font-size: 10px; font-weight: 600; color: #6E7681; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;">Week 2</span>
+      <span class="font-mono" style="font-size: 16px; font-weight: 600; color: #EF4444;">-$603.32</span>
+      <span class="font-mono" style="font-size: 10px; color: #6E7681; margin-top: 2px;">3 trades</span>
+    </div>
+
+    <!-- WEEK 3: Feb 15 (Sun) - Feb 21 (Sat) -->
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">15</span>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">16</span>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">17</span>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">18</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$201.24</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">19</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$2.96</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">20</span>
+    </div>
+    <!-- Week 3 Summary -->
+    <div class="calendar-cell weekly-summary-red" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <span class="day-num" style="position:absolute; top:8px; left:10px;">21</span>
+      <span style="font-size: 10px; font-weight: 600; color: #6E7681; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;">Week 3</span>
+      <span class="font-mono" style="font-size: 16px; font-weight: 600; color: #EF4444;">-$204.20</span>
+      <span class="font-mono" style="font-size: 10px; color: #6E7681; margin-top: 2px;">2 trades</span>
+    </div>
+
+    <!-- WEEK 4: Feb 22 (Sun) - Feb 28 (Sat) -->
+    <div class="calendar-cell cell-empty">
+      <span class="day-num">22</span>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">23</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$0.74</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-green">
+      <span class="daily-day-num">24</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-green">+$397.04</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">25</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$100.96</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-green">
+      <span class="daily-day-num">26</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-green">+$399.26</span>
+        <span class="font-mono daily-trades">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-red">
+      <span class="daily-day-num">27</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl pnl-red">-$202.70</span>
+        <span class="font-mono daily-trades">2 trades</span>
+      </div>
+    </div>
+    <!-- Week 4 Summary -->
+    <div class="calendar-cell weekly-summary-green" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <span class="day-num" style="position:absolute; top:8px; left:10px;">28</span>
+      <span style="font-size: 10px; font-weight: 600; color: #6E7681; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;">Week 4</span>
+      <span class="font-mono" style="font-size: 16px; font-weight: 600; color: #34D399;">+$491.90</span>
+      <span class="font-mono" style="font-size: 10px; color: #6E7681; margin-top: 2px;">6 trades</span>
+    </div>
+
+    <!-- WEEK 5: Mar 1-7 overflow (from reference screenshot data) -->
+    <div class="calendar-cell cell-outside">
+      <span class="day-num-outside">1</span>
+    </div>
+    <div class="calendar-cell cell-outside" style="background: rgba(239,68,68,0.06);">
+      <span class="daily-day-num" style="color:#3B4048;">2</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl" style="color: rgba(239,68,68,0.6);">-$0.48</span>
+        <span class="font-mono daily-trades" style="color:#4B5058;">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-outside" style="background: rgba(239,68,68,0.06);">
+      <span class="daily-day-num" style="color:#3B4048;">3</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl" style="color: rgba(239,68,68,0.6);">-$102.96</span>
+        <span class="font-mono daily-trades" style="color:#4B5058;">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-outside">
+      <span class="day-num-outside">4</span>
+    </div>
+    <div class="calendar-cell cell-outside" style="background: rgba(239,68,68,0.06);">
+      <span class="daily-day-num" style="color:#3B4048;">5</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl" style="color: rgba(239,68,68,0.6);">-$202.44</span>
+        <span class="font-mono daily-trades" style="color:#4B5058;">1 trade</span>
+      </div>
+    </div>
+    <div class="calendar-cell cell-outside" style="background: rgba(52,211,153,0.04);">
+      <span class="daily-day-num" style="color:#3B4048;">6</span>
+      <div class="daily-trading">
+        <span class="font-mono daily-pnl" style="color: rgba(52,211,153,0.5);">+$0.52</span>
+        <span class="font-mono daily-trades" style="color:#4B5058;">1 trade</span>
+      </div>
+    </div>
+    <!-- Week 5 Summary -->
+    <div class="calendar-cell weekly-summary-red" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; opacity: 0.55;">
+      <span class="day-num-outside" style="position:absolute; top:8px; left:10px;">7</span>
+      <span style="font-size: 10px; font-weight: 600; color: #6E7681; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;">Week 5</span>
+      <span class="font-mono" style="font-size: 16px; font-weight: 600; color: #EF4444;">-$305.36</span>
+      <span class="font-mono" style="font-size: 10px; color: #6E7681; margin-top: 2px;">4 trades</span>
+    </div>
+
+  </div>
+
+  <!-- KPI STRIP -->
+  <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 10px; flex-shrink: 0;">
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Month P&L</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #34D399;">+$874.74</div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">8 trading days</div>
+    </div>
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Trades</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #E6EDF3;">15</div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">across 8 sessions</div>
+    </div>
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Win Rate</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #E6EDF3;">53<span style="font-size: 13px; color: #6E7681;">%</span></div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">8W / 7L</div>
+    </div>
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Best Day</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #34D399;">+$399.76</div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">Feb 6</div>
+    </div>
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Worst Day</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #EF4444;">-$400.88</div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">Feb 9</div>
+    </div>
+    <div class="kpi-card">
+      <div style="font-size: 10px; font-weight: 500; color: #6E7681; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Avg P&L/Day</div>
+      <div class="font-mono" style="font-size: 18px; font-weight: 600; color: #34D399;">+$109.34</div>
+      <div style="font-size: 11px; color: #6E7681; margin-top: 3px;">per trading day</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer style="padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(92,92,122,0.12); font-size: 11px; color: #6E7681; flex-shrink: 0;">
+  <span>TradeLog v1.0</span>
+  <span>Last Import: Mar 22, 2026 <span style="color: #00D4AA;">&bull;</span> Connected</span>
+</footer>
+
+</body>
+</html>

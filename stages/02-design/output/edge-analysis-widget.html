@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edge Analysis Widget</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT: '#0D1117', 100: '#161B22', 300: '#21262D' },
+            neon: { DEFAULT: '#00D4AA' },
+            gain: { DEFAULT: '#34D399' },
+            loss: { DEFAULT: '#EF4444' },
+            flat: { DEFAULT: '#6E7681' },
+            label: { primary: '#E6EDF3', secondary: '#8B949E', tertiary: '#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Fira Code', monospace;
+      -webkit-font-smoothing: antialiased;
+      background: #0D1117;
+      color: #E6EDF3;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    .tile {
+      background: #161B22;
+      border: 1px solid rgba(92, 92, 122, 0.12);
+      border-radius: 6px;
+    }
+
+    .tile-header {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6E7681;
+    }
+
+    .gain-text { color: #34D399; }
+    .loss-text { color: #EF4444; }
+    .neon-text { color: #00D4AA; }
+    .warn-text { color: #FFD600; }
+
+    .divider {
+      height: 1px;
+      background: rgba(92, 92, 122, 0.10);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Container simulating col-span-4 width (~380px typical in a 12-col grid) -->
+  <div style="width: 380px;">
+
+    <!-- ===== EDGE ANALYSIS WIDGET ===== -->
+    <div class="tile flex flex-col" style="overflow: hidden;">
+      <div class="tile-header px-3 pt-1.5 pb-1">Performance Edge</div>
+
+      <div class="px-3 pb-2 flex flex-col" style="gap: 0;">
+
+        <!-- 1. EXPECTANCY — Hero metric -->
+        <div class="rounded px-2.5 py-2" style="background: rgba(0,212,170,0.05); border: 1px solid rgba(0,212,170,0.10); margin-bottom: 10px;">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[10px] text-label-tertiary font-display font-medium tracking-wide uppercase">Expectancy / Trade</span>
+            <span class="text-[9px] text-label-tertiary font-display" style="letter-spacing: 0.04em;">95 trades</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="gain-text tabular-nums" style="font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;">+$12.40</span>
+            <span class="text-[10px] text-label-tertiary font-display">/trade</span>
+          </div>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="text-[9px] font-display" style="color: #8B949E; opacity: 0.7;">58% WR &times; $48 avg win &minus; 42% &times; $37 avg loss</span>
+          </div>
+        </div>
+
+        <!-- 2. LONG VS SHORT -->
+        <div style="margin-bottom: 10px;">
+          <div class="text-[10px] text-label-tertiary font-display font-medium tracking-wide uppercase mb-1.5">Long vs Short</div>
+
+          <!-- Long row -->
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M5 1L9 7H1L5 1Z" fill="#34D399" opacity="0.9"/>
+              </svg>
+              <span class="text-[10px] font-display font-semibold gain-text" style="letter-spacing: 0.06em;">LONG</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] tabular-nums text-label-primary font-medium">62%</span>
+              <span class="text-[10px] text-label-tertiary">|</span>
+              <span class="text-[11px] tabular-nums gain-text font-medium">+$24</span>
+              <span class="text-[10px] text-label-tertiary">avg</span>
+              <span class="text-[10px] text-label-tertiary">|</span>
+              <span class="text-[11px] tabular-nums text-label-secondary">48</span>
+            </div>
+          </div>
+
+          <!-- Short row -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M5 9L1 3H9L5 9Z" fill="#EF4444" opacity="0.9"/>
+              </svg>
+              <span class="text-[10px] font-display font-semibold loss-text" style="letter-spacing: 0.06em;">SHORT</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] tabular-nums text-label-primary font-medium">41%</span>
+              <span class="text-[10px] text-label-tertiary">|</span>
+              <span class="text-[11px] tabular-nums loss-text font-medium">-$8</span>
+              <span class="text-[10px] text-label-tertiary">avg</span>
+              <span class="text-[10px] text-label-tertiary">|</span>
+              <span class="text-[11px] tabular-nums text-label-secondary">47</span>
+            </div>
+          </div>
+
+          <!-- Strength indicator bar -->
+          <div class="flex items-center gap-1.5 mt-1.5">
+            <div class="flex-1 h-[3px] rounded-full overflow-hidden" style="background: rgba(92,92,122,0.08);">
+              <div class="h-full rounded-full" style="width: 60.4%; background: linear-gradient(90deg, #34D399 0%, #00D4AA 100%); opacity: 0.8;"></div>
+            </div>
+            <span class="text-[9px] neon-text font-display font-medium">long edge</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 3. BREAKEVEN RATE -->
+        <div style="margin-top: 10px; margin-bottom: 10px;">
+          <div class="text-[10px] text-label-tertiary font-display font-medium tracking-wide uppercase mb-1.5">Win / Loss / Breakeven</div>
+
+          <!-- Segmented bar -->
+          <div class="flex rounded-full overflow-hidden" style="height: 5px; gap: 1px;">
+            <div style="width: 50%; background: #34D399; opacity: 0.8; border-radius: 3px 0 0 3px;"></div>
+            <div style="width: 40.5%; background: #EF4444; opacity: 0.8;"></div>
+            <div style="width: 9.5%; background: #6E7681; opacity: 0.6; border-radius: 0 3px 3px 0;"></div>
+          </div>
+
+          <!-- Labels below bar -->
+          <div class="flex items-center justify-between mt-1">
+            <div class="flex items-center gap-1">
+              <div class="w-1.5 h-1.5 rounded-full" style="background: #34D399;"></div>
+              <span class="text-[11px] tabular-nums gain-text font-medium">50%</span>
+              <span class="text-[10px] text-label-tertiary">W</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-1.5 h-1.5 rounded-full" style="background: #EF4444;"></div>
+              <span class="text-[11px] tabular-nums loss-text font-medium">40.5%</span>
+              <span class="text-[10px] text-label-tertiary">L</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-1.5 h-1.5 rounded-full" style="background: #6E7681;"></div>
+              <span class="text-[11px] tabular-nums text-label-secondary font-medium">9.5%</span>
+              <span class="text-[10px] text-label-tertiary">BE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 4. RECOVERY FACTOR -->
+        <div class="flex items-center justify-between" style="margin-top: 10px;">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] text-label-tertiary font-display font-medium tracking-wide uppercase">Recovery Factor</span>
+            <span class="text-[9px] text-label-tertiary font-display" style="opacity: 0.6;">net P&L / max DD</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="tabular-nums warn-text" style="font-size: 16px; font-weight: 700; line-height: 1;">1.8x</span>
+            <span class="rounded py-0.5 text-[8px] font-display font-semibold warn-text" style="background: rgba(255,214,0,0.10); border: 1px solid rgba(255,214,0,0.15); letter-spacing: 0.08em; padding: 2px 7px; margin-left: 4px;">MODERATE</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

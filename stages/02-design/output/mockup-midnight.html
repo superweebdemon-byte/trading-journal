@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeLog v3b — Midnight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: {
+              DEFAULT: '#000000',
+              50: '#030305',
+              100: '#06060C',
+              150: '#0A0A12',
+              200: '#0E0E18',
+              300: '#14142A',
+              400: '#1A1A36',
+              500: '#252548',
+              600: '#35355A',
+              700: '#4A4A6A',
+            },
+            neon: {
+              DEFAULT: '#E040FB',
+              bright: '#F06FFF',
+              dim: '#C020DB',
+              muted: '#9C27B0',
+              subtle: 'rgba(224, 64, 251, 0.10)',
+              ring: 'rgba(224, 64, 251, 0.20)',
+              glow: 'rgba(224, 64, 251, 0.35)',
+            },
+            cyan: {
+              DEFAULT: '#00E5FF',
+              dim: '#00B8D4',
+            },
+            gain: {
+              DEFAULT: '#00E676',
+              bright: '#69F0AE',
+              dim: '#00C853',
+              bg: 'rgba(0, 230, 118, 0.06)',
+              bar: 'rgba(0, 230, 118, 0.75)',
+            },
+            loss: {
+              DEFAULT: '#FF1744',
+              bright: '#FF5252',
+              dim: '#D50000',
+              bg: 'rgba(255, 23, 68, 0.06)',
+              bar: 'rgba(255, 23, 68, 0.75)',
+            },
+            flat: {
+              DEFAULT: '#5C5C7A',
+              bg: 'rgba(92, 92, 122, 0.10)',
+            },
+            label: {
+              primary: '#E8E8F0',
+              secondary: '#8888AA',
+              tertiary: '#555570',
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Fira Code', monospace;
+      -webkit-font-smoothing: antialiased;
+      background: #000000;
+      color: #E8E8F0;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* Subtle grid overlay */
+    .grid-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: 0.04;
+      background-image:
+        linear-gradient(rgba(224, 64, 251, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(224, 64, 251, 0.3) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Scanlines — more aggressive for the quant look */
+    .scanlines::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(224, 64, 251, 0.015) 1px, rgba(224, 64, 251, 0.015) 2px);
+    }
+
+    /* Tile styling — near-black with neon border glow */
+    .tile {
+      background: rgba(6, 6, 12, 0.85);
+      border: 1px solid rgba(224, 64, 251, 0.10);
+      backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    .tile-header {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 12px 16px 8px;
+      color: #555570;
+    }
+
+    /* Heatmap cells */
+    .heat-cell {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 2px;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+      min-height: 28px;
+    }
+    .heat-cell:hover { transform: scale(1.25); z-index: 10; position: relative; box-shadow: 0 0 8px rgba(224, 64, 251, 0.3); }
+
+    /* Bar chart bars */
+    .bar { transition: height 0.3s ease, opacity 0.15s ease; border-radius: 1px 1px 0 0; }
+    .bar:hover { opacity: 0.9; }
+
+    /* Equity line path */
+    .equity-path {
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      animation: drawLine 2s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Neon glow for hero tile */
+    .glow-neon {
+      box-shadow: 0 0 20px rgba(224, 64, 251, 0.08), inset 0 1px 0 rgba(224, 64, 251, 0.06);
+      border-color: rgba(224, 64, 251, 0.20);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #14142A; border-radius: 2px; }
+
+    /* Session row hover */
+    .session-row { transition: background 0.15s ease; cursor: pointer; }
+    .session-row:hover { background: rgba(224, 64, 251, 0.03); }
+
+    /* Pill tags */
+    .pill {
+      font-size: 9px; font-weight: 600;
+      padding: 1px 7px; border-radius: 2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .gain-text { color: #00E676; }
+    .loss-text { color: #FF1744; }
+    .neon-text { color: #E040FB; }
+
+    /* Pulsing neon dot */
+    @keyframes neonPulse {
+      0%, 100% { box-shadow: 0 0 4px #E040FB, 0 0 8px rgba(224, 64, 251, 0.4); }
+      50% { box-shadow: 0 0 8px #E040FB, 0 0 16px rgba(224, 64, 251, 0.6); }
+    }
+    .neon-pulse { animation: neonPulse 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+  <div class="grid-overlay"></div>
+
+  <!-- TOP BAR -->
+  <header class="relative z-10 flex items-center justify-between px-6 py-3 border-b border-void-300" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="text-neon">
+          <path d="M2 14L6 8L10 11L14 5L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 14L6 8L10 11L14 5L18 9V16H2V14Z" fill="currentColor" opacity="0.20"/>
+        </svg>
+        <span class="font-display font-bold text-sm tracking-tight text-label-primary">TradeLog</span>
+      </div>
+      <div class="h-4 w-px bg-void-400"></div>
+      <span class="text-[10px] tracking-widest uppercase text-label-tertiary font-medium">Midnight</span>
+    </div>
+    <div class="flex items-center gap-5">
+      <span class="text-[10px] text-label-tertiary tabular-nums">Nov 2025 — Mar 2026</span>
+      <div class="flex items-center gap-1.5">
+        <div class="w-1.5 h-1.5 rounded-full bg-neon neon-pulse"></div>
+        <span class="text-[10px] neon-text font-medium">v3b</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 p-4 max-w-[1440px] mx-auto">
+
+    <!-- ROW 1: KPI Ribbon -->
+    <div class="grid grid-cols-7 gap-2 mb-3">
+      <div class="tile rounded-md px-4 py-3 glow-neon col-span-1">
+        <div class="tile-header px-0 pt-0 pb-1">Net P&L</div>
+        <div class="text-xl font-bold tabular-nums gain-text">+$2,572.50</div>
+        <div class="text-[10px] text-label-tertiary mt-1 tabular-nums">85 trades</div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Win Rate</div>
+        <div class="text-xl font-bold tabular-nums text-label-primary">48.2%</div>
+        <div class="flex items-center gap-[1px] mt-1">
+          <div class="h-1 rounded-full bg-gain" style="width:48%; opacity:0.8"></div>
+          <div class="h-1 rounded-full bg-loss" style="width:52%; opacity:0.8"></div>
+        </div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Profit Factor</div>
+        <div class="text-xl font-bold tabular-nums text-label-primary">1.39</div>
+        <div class="text-[10px] text-label-tertiary mt-1">Gross W/L ratio</div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Avg Win</div>
+        <div class="text-xl font-bold tabular-nums gain-text">+$253.51</div>
+        <div class="text-[10px] text-label-tertiary mt-1 tabular-nums">41 wins</div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Avg Loss</div>
+        <div class="text-xl font-bold tabular-nums loss-text">-$163.61</div>
+        <div class="text-[10px] text-label-tertiary mt-1 tabular-nums">33 losses</div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Best Day</div>
+        <div class="text-xl font-bold tabular-nums gain-text">+$401</div>
+        <div class="text-[10px] text-label-tertiary mt-1">Multiple days</div>
+      </div>
+      <div class="tile rounded-md px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Max Drawdown</div>
+        <div class="text-xl font-bold tabular-nums loss-text">-$584</div>
+        <div class="text-[10px] text-label-tertiary mt-1">Peak to trough</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Equity Curve + Heatmap + Distribution -->
+    <div class="grid grid-cols-12 gap-2 mb-3">
+
+      <!-- EQUITY CURVE — 7 cols -->
+      <div class="tile rounded-md col-span-7 scanlines overflow-hidden">
+        <div class="tile-header flex items-center justify-between">
+          <span>Cumulative P&L</span>
+          <span class="text-[9px] neon-text tabular-nums font-medium">LIVE</span>
+        </div>
+        <div class="px-4 pb-4">
+          <svg viewBox="0 0 700 220" class="w-full" preserveAspectRatio="xMidYMid meet">
+            <line x1="0" y1="55" x2="700" y2="55" stroke="#14142A" stroke-width="0.5" stroke-dasharray="4,4"/>
+            <line x1="0" y1="110" x2="700" y2="110" stroke="#14142A" stroke-width="0.5" stroke-dasharray="4,4"/>
+            <line x1="0" y1="165" x2="700" y2="165" stroke="#14142A" stroke-width="0.5" stroke-dasharray="4,4"/>
+
+            <text x="4" y="52" fill="#555570" font-size="9" font-family="Fira Code">+$3,000</text>
+            <text x="4" y="107" fill="#555570" font-size="9" font-family="Fira Code">+$1,500</text>
+            <text x="4" y="162" fill="#555570" font-size="9" font-family="Fira Code">$0</text>
+
+            <defs>
+              <linearGradient id="eqGradNeon" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#E040FB" stop-opacity="0.20"/>
+                <stop offset="50%" stop-color="#E040FB" stop-opacity="0.05"/>
+                <stop offset="100%" stop-color="#E040FB" stop-opacity="0"/>
+              </linearGradient>
+              <filter id="neonGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <path d="M10,125 L30,107 L50,103 L60,102 L65,101 L80,120 L90,119
+                     L110,121 L120,140 L130,139 L140,138 L155,137
+                     L175,132 L185,131 L195,130 L210,149
+                     L225,146 L240,97 L260,96
+                     L280,117 L295,115 L310,116 L320,136
+                     L340,100 L355,99 L365,118
+                     L385,117 L395,96 L410,95
+                     L430,76 L440,80 L450,79 L455,78 L465,77
+                     L485,96 L500,95 L510,74
+                     L530,73 L545,71 L560,91
+                     L575,108 L585,115 L590,107 L600,106
+                     L615,86 L630,105 L645,103 L655,102
+                     L665,84 L680,66 L695,48
+                     L695,200 L10,200 Z"
+                  fill="url(#eqGradNeon)"/>
+
+            <path d="M10,125 L30,107 L50,103 L60,102 L65,101 L80,120 L90,119
+                     L110,121 L120,140 L130,139 L140,138 L155,137
+                     L175,132 L185,131 L195,130 L210,149
+                     L225,146 L240,97 L260,96
+                     L280,117 L295,115 L310,116 L320,136
+                     L340,100 L355,99 L365,118
+                     L385,117 L395,96 L410,95
+                     L430,76 L440,80 L450,79 L455,78 L465,77
+                     L485,96 L500,95 L510,74
+                     L530,73 L545,71 L560,91
+                     L575,108 L585,115 L590,107 L600,106
+                     L615,86 L630,105 L645,103 L655,102
+                     L665,84 L680,66 L695,48"
+                  fill="none" stroke="#E040FB" stroke-width="1.5" stroke-linejoin="round" class="equity-path" filter="url(#neonGlow)"/>
+
+            <circle cx="695" cy="48" r="3" fill="#E040FB" class="neon-pulse"/>
+
+            <text x="40" y="215" fill="#555570" font-size="9" font-family="Fira Code">Nov</text>
+            <text x="200" y="215" fill="#555570" font-size="9" font-family="Fira Code">Dec</text>
+            <text x="390" y="215" fill="#555570" font-size="9" font-family="Fira Code">Jan</text>
+            <text x="560" y="215" fill="#555570" font-size="9" font-family="Fira Code">Feb</text>
+            <text x="670" y="215" fill="#555570" font-size="9" font-family="Fira Code">Mar</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TIME-OF-DAY HEATMAP — 3 cols -->
+      <div class="tile rounded-md col-span-3">
+        <div class="tile-header">P&L by Time of Day</div>
+        <div class="px-4 pb-4">
+          <div class="grid grid-cols-6 gap-[3px] mb-2">
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">9:30</div>
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">10:00</div>
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">10:30</div>
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">11:00</div>
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">11:30</div>
+            <div class="text-[8px] text-label-tertiary text-center tabular-nums">12:00+</div>
+          </div>
+
+          <!-- Row: Mon -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] text-label-tertiary w-6 text-right shrink-0">Mon</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell" style="background: rgba(0,230,118,0.60)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(255,23,68,0.35)" title="-$100"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.12)" title="+$4"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.55)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.45)" title="+$400"></div>
+            </div>
+          </div>
+          <!-- Row: Tue -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] text-label-tertiary w-6 text-right shrink-0">Tue</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell" style="background: rgba(0,230,118,0.60)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(255,23,68,0.40)" title="-$200"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Wed -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] text-label-tertiary w-6 text-right shrink-0">Wed</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell" style="background: rgba(255,23,68,0.40)" title="-$198"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.12)" title="+$6"></div>
+              <div class="heat-cell" style="background: rgba(255,23,68,0.40)" title="-$192"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.55)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Thu -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] text-label-tertiary w-6 text-right shrink-0">Thu</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell" style="background: rgba(255,23,68,0.55)" title="-$199"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.40)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(255,23,68,0.30)" title="-$199"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Fri -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] text-label-tertiary w-6 text-right shrink-0">Fri</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell" style="background: rgba(255,23,68,0.40)" title="-$199"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.08)" title="+$0.50"></div>
+              <div class="heat-cell" style="background: rgba(0,230,118,0.55)" title="+$400"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+              <div class="heat-cell" style="background: rgba(20,20,42,0.6)" title="$0"></div>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex items-center justify-between mt-3 px-1">
+            <span class="text-[8px] loss-text">-$400</span>
+            <div class="flex items-center gap-[2px]">
+              <div class="w-3 h-2 rounded-sm" style="background: rgba(255,23,68,0.55)"></div>
+              <div class="w-3 h-2 rounded-sm" style="background: rgba(255,23,68,0.25)"></div>
+              <div class="w-3 h-2 rounded-sm" style="background: rgba(20,20,42,0.6)"></div>
+              <div class="w-3 h-2 rounded-sm" style="background: rgba(0,230,118,0.25)"></div>
+              <div class="w-3 h-2 rounded-sm" style="background: rgba(0,230,118,0.55)"></div>
+            </div>
+            <span class="text-[8px] gain-text">+$400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P&L DISTRIBUTION — 2 cols -->
+      <div class="tile rounded-md col-span-2">
+        <div class="tile-header">P&L Distribution</div>
+        <div class="px-3 pb-3">
+          <div class="flex items-end gap-[3px] h-[140px] mt-2">
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:18%; opacity:0.85"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">-400</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:55%; opacity:0.75"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">-200</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:22%; opacity:0.55"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">-100</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full" style="height:40%; background: rgba(224,64,251,0.25)"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">0</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-gain" style="height:30%; opacity:0.55"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">+50</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-gain" style="height:70%; opacity:0.75"></div>
+              <span class="text-[7px] text-label-tertiary mt-1 tabular-nums">+400</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-t border-void-300">
+            <div class="flex justify-between text-[9px]">
+              <span class="text-label-tertiary">Median</span>
+              <span class="tabular-nums gain-text">+$2.00</span>
+            </div>
+            <div class="flex justify-between text-[9px] mt-1">
+              <span class="text-label-tertiary">Std Dev</span>
+              <span class="tabular-nums text-label-secondary">$245.80</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Session Log + Monthly + Behavioral -->
+    <div class="grid grid-cols-12 gap-2">
+
+      <!-- SESSION LOG — 7 cols -->
+      <div class="tile rounded-md col-span-7 overflow-hidden">
+        <div class="tile-header flex items-center justify-between">
+          <span>Session Log</span>
+          <span class="text-[9px] text-label-tertiary tabular-nums">85 trades across 55 sessions</span>
+        </div>
+        <div class="overflow-y-auto max-h-[340px]">
+          <table class="w-full text-[11px]">
+            <thead>
+              <tr class="text-label-tertiary text-[9px] uppercase tracking-wider">
+                <th class="text-left font-medium px-4 py-2">Date</th>
+                <th class="text-left font-medium px-2 py-2">Contract</th>
+                <th class="text-center font-medium px-2 py-2">Trades</th>
+                <th class="text-center font-medium px-2 py-2">W/L</th>
+                <th class="text-right font-medium px-2 py-2">Duration</th>
+                <th class="text-right font-medium px-4 py-2">P&L</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/12</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">24m 50s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/11</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">13m 0s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/10</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span><span class="text-label-tertiary">/</span><span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">2m 27s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$200.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/09</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">2m 0s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/06</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">10m 26s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$2.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/05</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span> <span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">2</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span><span class="text-label-tertiary">/</span><span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">11m 37s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$198.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/03</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span><span class="text-label-tertiary">/</span><span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">31m 33s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$100.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">03/02</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">25m 5s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$1.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">02/27</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span> <span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">2</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span><span class="text-label-tertiary">/</span><span class="loss-text">2</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">27m 23s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$199.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">02/26</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(224,64,251,0.12); color: #E040FB;">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">13m 42s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">02/25</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span><span class="text-label-tertiary">/</span><span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">28m 59s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$98.00</td>
+              </tr>
+              <tr class="session-row border-t border-void-200">
+                <td class="px-4 py-2 tabular-nums text-label-primary">02/24</td>
+                <td class="px-2 py-2"><span class="pill" style="background: rgba(92,92,122,0.15); color: #8888AA;">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums text-label-secondary">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span><span class="text-label-tertiary">/</span><span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums text-label-tertiary">22m 3s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — 5 cols -->
+      <div class="col-span-5 flex flex-col gap-2">
+
+        <!-- MONTHLY P&L BAR CHART -->
+        <div class="tile rounded-md">
+          <div class="tile-header">Monthly P&L</div>
+          <div class="px-4 pb-4">
+            <div class="flex items-end gap-3 h-[100px]">
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:55%; opacity:0.7"></div>
+                </div>
+                <span class="text-[9px] text-label-tertiary mt-1">Nov</span>
+                <span class="text-[9px] gain-text tabular-nums">+$672</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:40%; opacity:0.6"></div>
+                </div>
+                <span class="text-[9px] text-label-tertiary mt-1">Dec</span>
+                <span class="text-[9px] gain-text tabular-nums">+$419</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:50%; opacity:0.65"></div>
+                </div>
+                <span class="text-[9px] text-label-tertiary mt-1">Jan</span>
+                <span class="text-[9px] gain-text tabular-nums">+$509</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:45%; opacity:0.6"></div>
+                </div>
+                <span class="text-[9px] text-label-tertiary mt-1">Feb</span>
+                <span class="text-[9px] gain-text tabular-nums">+$408</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-neon" style="height:50%; opacity:0.8"></div>
+                </div>
+                <span class="text-[9px] text-label-tertiary mt-1">Mar*</span>
+                <span class="text-[9px] neon-text tabular-nums">+$505</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BEHAVIORAL SIGNALS -->
+        <div class="tile rounded-md">
+          <div class="tile-header">Behavioral Signals</div>
+          <div class="px-4 pb-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-loss animate-pulse"></div>
+                <span class="text-[11px] text-label-primary">Revenge Trades</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium tabular-nums loss-text">3 detected</span>
+                <span class="text-[9px] text-label-tertiary">/ 85 total</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                <span class="text-[11px] text-label-primary">Overtrading Days</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium tabular-nums text-amber-400">2 flagged</span>
+                <span class="text-[9px] text-label-tertiary">avg 1.5/day</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-void-600"></div>
+                <span class="text-[11px] text-label-primary">Max Consec. Losses</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums text-label-secondary">4</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-gain"></div>
+                <span class="text-[11px] text-label-primary">Max Consec. Wins</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums gain-text">5</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-neon neon-pulse"></div>
+                <span class="text-[11px] text-label-primary">Avg Trade Duration</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums neon-text">16m 42s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTRACT BREAKDOWN -->
+        <div class="tile rounded-md">
+          <div class="tile-header">Contract Performance</div>
+          <div class="px-4 pb-4">
+            <div class="space-y-3">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-medium neon-text">MNQ</span>
+                  <span class="text-[11px] tabular-nums gain-text font-medium">+$2,218.50</span>
+                </div>
+                <div class="flex gap-[2px] h-2 rounded-sm overflow-hidden">
+                  <div class="bg-gain rounded-l-sm" style="width:55%; opacity:0.8"></div>
+                  <div class="bg-loss rounded-r-sm" style="width:32%; opacity:0.8"></div>
+                  <div style="width:13%; background: rgba(92,92,122,0.3)"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-[8px] text-label-tertiary">44 trades | 52% win rate</span>
+                  <span class="text-[8px] text-label-tertiary">PF 1.72</span>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-medium text-label-secondary">MYM</span>
+                  <span class="text-[11px] tabular-nums gain-text font-medium">+$354.00</span>
+                </div>
+                <div class="flex gap-[2px] h-2 rounded-sm overflow-hidden">
+                  <div class="bg-gain rounded-l-sm" style="width:38%; opacity:0.8"></div>
+                  <div class="bg-loss rounded-r-sm" style="width:50%; opacity:0.8"></div>
+                  <div style="width:12%; background: rgba(92,92,122,0.3)"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-[8px] text-label-tertiary">41 trades | 41% win rate</span>
+                  <span class="text-[8px] text-label-tertiary">PF 1.11</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-3 pt-3 border-t border-void-300 flex items-center justify-between px-1">
+      <span class="text-[9px] text-label-tertiary">TradeLog v3b — Midnight</span>
+      <div class="flex items-center gap-4">
+        <span class="text-[9px] text-label-tertiary tabular-nums">85 trades loaded</span>
+        <span class="text-[9px] text-label-tertiary">Topstep X</span>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

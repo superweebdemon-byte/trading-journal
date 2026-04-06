@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streak Tracker — Concept Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0D1117;
+    color: #E6EDF3;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00D4AA;
+    margin-bottom: -16px;
+  }
+
+  .tile {
+    width: 420px;
+    background: #161B22;
+    border: 1px solid #21262D;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .tile-title {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #8B949E;
+  }
+
+  .tile-subtitle {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #484F58;
+  }
+
+  .variant-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #00D4AA;
+    background: rgba(0, 212, 170, 0.08);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    align-self: flex-start;
+  }
+
+  /* Summary stats row */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #8B949E;
+    border-top: 1px solid #21262D;
+    padding-top: 10px;
+  }
+
+  .stat-item { display: flex; gap: 4px; }
+  .stat-value { color: #E6EDF3; font-weight: 600; }
+  .stat-value.win { color: #34D399; }
+  .stat-value.loss { color: #EF4444; }
+  .stat-value.current { color: #34D399; }
+
+  /* ========= VARIANT A: Block Timeline ========= */
+  .block-timeline-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .block {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .block.win { background: #34D399; }
+  .block.loss { background: #EF4444; }
+
+  .streak-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: #484F58;
+    margin-top: 2px;
+    padding: 0 2px;
+  }
+
+  .streak-label { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .streak-label .arrow { font-size: 7px; }
+  .streak-label.win-label { color: #34D399; }
+  .streak-label.loss-label { color: #EF4444; }
+
+  /* ========= VARIANT B: Segmented Bar ========= */
+  .segmented-bar-container {
+    width: 100%;
+    height: 32px;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    gap: 1px;
+  }
+
+  .segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
+    min-width: 4px;
+    transition: opacity 0.2s;
+  }
+
+  .segment.win { background: #34D399; }
+  .segment.loss { background: #EF4444; }
+  .segment:hover { opacity: 0.8; }
+
+  /* ========= VARIANT C: Timeline with Intensity ========= */
+  .intensity-timeline {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 80px;
+    width: 100%;
+  }
+
+  .intensity-bar {
+    flex: 1;
+    min-width: 3px;
+    border-radius: 1px 1px 0 0;
+  }
+
+  .intensity-bar.win { background: #34D399; }
+  .intensity-bar.loss { background: #EF4444; }
+
+  .intensity-baseline {
+    width: 100%;
+    height: 1px;
+    background: #21262D;
+    margin-top: -1px;
+  }
+
+  /* Streak underline markers */
+  .intensity-markers {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+  }
+
+  .intensity-marker {
+    flex: 1;
+    min-width: 3px;
+    height: 3px;
+    border-radius: 0 0 1px 1px;
+  }
+
+  .intensity-marker.streak-highlight-win { background: rgba(52, 211, 153, 0.3); }
+  .intensity-marker.streak-highlight-loss { background: rgba(239, 68, 68, 0.3); }
+</style>
+</head>
+<body>
+
+<h1>Streak Tracker — Concept Variations</h1>
+
+<!-- VARIANT A: Block Timeline -->
+<div class="tile" id="variantA">
+  <div class="variant-label">A · Block Timeline</div>
+  <div class="tile-header">
+    <span class="tile-title">Streak Tracker</span>
+    <span class="tile-subtitle">84 trades · Nov 2025 – Mar 2026</span>
+  </div>
+  <div class="block-timeline-grid" id="blockGrid"></div>
+  <div class="streak-labels" id="streakLabels"></div>
+  <div class="stats-row">
+    <div class="stat-item">Longest Win: <span class="stat-value win">5</span></div>
+    <div class="stat-item">Longest Loss: <span class="stat-value loss">4</span></div>
+    <div class="stat-item">Current: <span class="stat-value current">2W</span></div>
+  </div>
+</div>
+
+<!-- VARIANT B: Segmented Bar -->
+<div class="tile" id="variantB">
+  <div class="variant-label">B · Segmented Bar</div>
+  <div class="tile-header">
+    <span class="tile-title">Streak Tracker</span>
+    <span class="tile-subtitle">84 trades · Nov 2025 – Mar 2026</span>
+  </div>
+  <div class="segmented-bar-container" id="segmentedBar"></div>
+  <div class="stats-row">
+    <div class="stat-item">Longest Win: <span class="stat-value win">5</span></div>
+    <div class="stat-item">Longest Loss: <span class="stat-value loss">4</span></div>
+    <div class="stat-item">Current: <span class="stat-value current">2W</span></div>
+  </div>
+</div>
+
+<!-- VARIANT C: Timeline with Intensity -->
+<div class="tile" id="variantC">
+  <div class="variant-label">C · Timeline with Intensity</div>
+  <div class="tile-header">
+    <span class="tile-title">Streak Tracker</span>
+    <span class="tile-subtitle">84 trades · Nov 2025 – Mar 2026</span>
+  </div>
+  <div class="intensity-timeline" id="intensityTimeline"></div>
+  <div class="intensity-baseline"></div>
+  <div class="intensity-markers" id="intensityMarkers"></div>
+  <div class="stats-row">
+    <div class="stat-item">Longest Win: <span class="stat-value win">5</span></div>
+    <div class="stat-item">Longest Loss: <span class="stat-value loss">4</span></div>
+    <div class="stat-item">Current: <span class="stat-value current">2W</span></div>
+  </div>
+</div>
+
+<script>
+// Realistic 84-trade sequence: 41.7% win rate (35 wins, 49 losses)
+// Hand-crafted to include a 5W streak, 4L streak, and realistic clustering
+const trades = [
+  // Nov 2025 — learning period, more losses
+  {w:0,pnl:-120},{w:1,pnl:85},{w:0,pnl:-57},{w:0,pnl:-95},{w:0,pnl:-140},
+  {w:1,pnl:210},{w:1,pnl:65},{w:0,pnl:-88},{w:0,pnl:-45},{w:1,pnl:155},
+  {w:0,pnl:-72},{w:0,pnl:-200},{w:0,pnl:-35},{w:1,pnl:92},{w:0,pnl:-110},
+  // Dec 2025 — mixed bag
+  {w:1,pnl:175},{w:1,pnl:320},{w:0,pnl:-65},{w:0,pnl:-155},{w:0,pnl:-42},
+  {w:0,pnl:-180},{w:1,pnl:48},{w:0,pnl:-90},{w:1,pnl:260},{w:1,pnl:145},
+  {w:1,pnl:88},{w:0,pnl:-75},{w:0,pnl:-125},{w:1,pnl:55},{w:0,pnl:-210},
+  // Jan 2026 — first hot streak appears
+  {w:0,pnl:-67},{w:1,pnl:190},{w:1,pnl:405},{w:1,pnl:130},{w:1,pnl:275},
+  {w:1,pnl:95},{w:0,pnl:-155},{w:0,pnl:-88},{w:0,pnl:-195},{w:0,pnl:-42},
+  {w:1,pnl:160},{w:0,pnl:-78},{w:0,pnl:-135},{w:1,pnl:72},{w:0,pnl:-50},
+  // Feb 2026 — tilt period then recovery
+  {w:0,pnl:-225},{w:0,pnl:-180},{w:0,pnl:-95},{w:0,pnl:-310},{w:1,pnl:45},
+  {w:0,pnl:-62},{w:1,pnl:185},{w:1,pnl:340},{w:0,pnl:-105},{w:0,pnl:-55},
+  {w:1,pnl:115},{w:0,pnl:-72},{w:1,pnl:225},{w:1,pnl:165},{w:0,pnl:-88},
+  // Mar 2026 — stabilizing
+  {w:0,pnl:-145},{w:1,pnl:280},{w:0,pnl:-35},{w:0,pnl:-170},{w:1,pnl:95},
+  {w:0,pnl:-82},{w:0,pnl:-110},{w:1,pnl:190},{w:0,pnl:-58},{w:1,pnl:135},
+  {w:0,pnl:-92},{w:0,pnl:-65},{w:1,pnl:310},{w:1,pnl:2},{w:0,pnl:-48},
+  {w:0,pnl:-125},{w:1,pnl:155},{w:0,pnl:-72},{w:1,pnl:240},{w:1,pnl:180},
+  {w:0,pnl:-90},{w:1,pnl:105},{w:1,pnl:88},{w:1,pnl:420},
+];
+
+// Compute streaks
+function computeStreaks(trades) {
+  const streaks = [];
+  let current = { type: trades[0].w ? 'win' : 'loss', length: 1, start: 0 };
+  for (let i = 1; i < trades.length; i++) {
+    const type = trades[i].w ? 'win' : 'loss';
+    if (type === current.type) {
+      current.length++;
+    } else {
+      streaks.push({ ...current, end: i - 1 });
+      current = { type, length: 1, start: i };
+    }
+  }
+  streaks.push({ ...current, end: trades.length - 1 });
+  return streaks;
+}
+
+const streaks = computeStreaks(trades);
+
+// ========== VARIANT A: Block Timeline ==========
+const blockGrid = document.getElementById('blockGrid');
+trades.forEach(t => {
+  const el = document.createElement('div');
+  el.className = `block ${t.w ? 'win' : 'loss'}`;
+  blockGrid.appendChild(el);
+});
+
+// Find longest win & loss streaks for labels
+const longestWin = streaks.filter(s => s.type === 'win').sort((a, b) => b.length - a.length)[0];
+const longestLoss = streaks.filter(s => s.type === 'loss').sort((a, b) => b.length - a.length)[0];
+
+const labelsEl = document.getElementById('streakLabels');
+labelsEl.innerHTML = `
+  <span class="streak-label win-label">&#9650; 5W streak (trades ${longestWin.start + 1}–${longestWin.end + 1})</span>
+  <span class="streak-label loss-label">&#9660; 4L streak (trades ${longestLoss.start + 1}–${longestLoss.end + 1})</span>
+`;
+
+// ========== VARIANT B: Segmented Bar ==========
+const segBar = document.getElementById('segmentedBar');
+streaks.forEach(s => {
+  const el = document.createElement('div');
+  el.className = `segment ${s.type}`;
+  // Width proportional to streak length out of 84
+  el.style.width = `${(s.length / 84) * 100}%`;
+  if (s.length >= 3) {
+    el.textContent = `${s.length}${s.type === 'win' ? 'W' : 'L'}`;
+  }
+  segBar.appendChild(el);
+});
+
+// ========== VARIANT C: Timeline with Intensity ==========
+const intTimeline = document.getElementById('intensityTimeline');
+const intMarkers = document.getElementById('intensityMarkers');
+const maxPnl = Math.max(...trades.map(t => Math.abs(t.pnl)));
+
+// Build a map: trade index -> streak info (for highlighting longest streaks)
+const tradeStreakMap = new Array(84).fill(null);
+streaks.forEach(s => {
+  for (let i = s.start; i <= s.end; i++) {
+    tradeStreakMap[i] = s;
+  }
+});
+
+trades.forEach((t, idx) => {
+  const bar = document.createElement('div');
+  bar.className = `intensity-bar ${t.w ? 'win' : 'loss'}`;
+  // Height: min 6px, max 72px based on PnL magnitude
+  const h = 6 + (Math.abs(t.pnl) / maxPnl) * 66;
+  bar.style.height = `${h}px`;
+  intTimeline.appendChild(bar);
+
+  // Marker for streak highlighting
+  const marker = document.createElement('div');
+  marker.className = 'intensity-marker';
+  const s = tradeStreakMap[idx];
+  if (s && s.length >= 4) {
+    marker.classList.add(s.type === 'win' ? 'streak-highlight-win' : 'streak-highlight-loss');
+  }
+  intMarkers.appendChild(marker);
+});
+</script>
+
+</body>
+</html>

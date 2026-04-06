@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Add Trade Modal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT:'#0D1117',50:'#0D1117',100:'#161B22',150:'#131920',200:'#161B22',300:'#21262D',400:'#262C36',500:'#2D333B',600:'#3D444D',700:'#484F58' },
+            neon: { DEFAULT:'#00D4AA',bright:'#33DDBB',dim:'#00B894',muted:'#009D7E',subtle:'rgba(0,212,170,0.12)',ring:'rgba(0,212,170,0.25)' },
+            gain: { DEFAULT:'#34D399',bright:'#6EE7B7',dim:'#10B981',bg:'rgba(52,211,153,0.06)' },
+            loss: { DEFAULT:'#EF4444',bright:'#F87171',dim:'#DC2626',bg:'rgba(239,68,68,0.06)' },
+            flat: { DEFAULT:'#6E7681',bg:'rgba(48,54,61,0.10)' },
+            label: { primary:'#E6EDF3',secondary:'#8B949E',tertiary:'#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Fira Code',monospace;-webkit-font-smoothing:antialiased;background:#0D1117;color:#E6EDF3}
+    .font-display{font-family:'Space Grotesk',sans-serif}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .tile{background:#161B22;border:1px solid rgba(48,54,61,0.12);border-radius:6px}
+    .tile-header{font-family:'Fira Code',monospace;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#6E7681}
+    .gain-text{color:#34D399}.loss-text{color:#EF4444}.neon-text{color:#00D4AA}
+    .pill{font-size:10px;font-weight:600;padding:1px 6px;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block}
+    .nav-link{color:#6E7681;font-size:12px;letter-spacing:0.02em;cursor:pointer;transition:color 0.15s}
+    .nav-link:hover{color:#8B949E}
+    .nav-link.active{color:#E6EDF3;background:rgba(0,212,170,0.12);padding:4px 10px;border-radius:4px}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#21262D;border-radius:2px}
+    .btn-primary{background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;padding:6px 16px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+    .btn-primary:hover{background:#33DDBB;border-color:#33DDBB}
+    .btn-secondary{background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);color:#8B949E;padding:6px 16px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+    .btn-secondary:hover{color:#E6EDF3;border-color:rgba(48,54,61,0.30)}
+    .backdrop{position:fixed;inset:0;background:rgba(13,17,23,0.75);z-index:40}
+    .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;width:560px;max-width:90vw;max-height:85vh;overflow-y:auto;background:#161B22;border:1px solid rgba(48,54,61,0.20);border-radius:8px}
+    .form-input{
+      background:rgba(13,17,23,0.6);
+      border:1px solid rgba(48,54,61,0.25);
+      border-radius:4px;
+      padding:7px 10px;
+      font-size:12px;
+      font-family:'Fira Code',monospace;
+      color:#E6EDF3;
+      width:100%;
+      outline:none;
+      transition:border-color 0.15s;
+    }
+    .form-input:focus{border-color:rgba(0,212,170,0.45)}
+    .form-input::placeholder{color:#484F58}
+    .form-label{
+      font-family:'Fira Code',monospace;
+      font-size:10px;
+      font-weight:500;
+      letter-spacing:0.10em;
+      text-transform:uppercase;
+      color:#6E7681;
+      margin-bottom:4px;
+      display:block;
+    }
+    select.form-input{
+      appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236E7681' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 10px center;
+      padding-right:28px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP NAV (dimmed behind modal) -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background:rgba(13,17,23,0.95)">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link active">Dashboard</span>
+        <span class="nav-link px-2.5 py-1">Calendar</span>
+        <span class="nav-link px-2.5 py-1">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>TOPSTEP X</span>
+        <span class="text-void-500">|</span>
+        <span>84 trades</span>
+        <span class="text-void-500">|</span>
+        <span>Nov 2025 – Mar 2026</span>
+      </div>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;cursor:pointer;">+ Add Trade</button>
+    </div>
+  </header>
+
+  <!-- Dashboard content behind (dimmed) -->
+  <main class="p-3 w-full max-w-[1280px] mx-auto opacity-30 pointer-events-none" aria-hidden="true">
+    <div class="grid grid-cols-7 gap-2 mb-3">
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Net P&L</div><div class="font-display text-2xl font-bold tabular-nums gain-text">+$2,100</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Win Rate</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">41.7%</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Profit Factor</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">1.38x</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Avg Win/Loss</div><div class="font-display text-lg font-bold tabular-nums gain-text">$220/$114</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Total Trades</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">84</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Max DD</div><div class="font-display text-2xl font-bold tabular-nums loss-text">-$397</div></div>
+      <div class="tile px-4 py-3"><div class="tile-header pb-1">Avg Duration</div><div class="font-display text-2xl font-bold tabular-nums text-label-primary">18m</div></div>
+    </div>
+    <div class="grid grid-cols-12 gap-2">
+      <div class="tile col-span-8 h-[240px]"></div>
+      <div class="tile col-span-4 h-[240px]"></div>
+    </div>
+  </main>
+
+  <!-- BACKDROP -->
+  <div class="backdrop"></div>
+
+  <!-- ADD TRADE MODAL -->
+  <div class="modal p-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h2 class="font-display text-lg font-bold text-label-primary">Add Trade</h2>
+        <p class="text-[11px] text-label-tertiary mt-0.5">Add trades manually or import from CSV</p>
+      </div>
+      <button class="text-label-tertiary hover:text-label-primary cursor-pointer" style="font-size:20px;line-height:1;">&times;</button>
+    </div>
+
+    <!-- Tab Pills -->
+    <div class="flex items-center gap-1.5 mb-4">
+      <button class="font-display text-[11px] font-medium px-3 py-1.5 rounded cursor-pointer" style="background:rgba(48,54,61,0.15);border:1px solid rgba(48,54,61,0.12);color:#8B949E;">Import CSV</button>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded cursor-pointer" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;">Manual Entry</button>
+    </div>
+
+    <!-- Manual Entry Form -->
+    <div class="space-y-3">
+      <!-- Row 1: Contract + Direction -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="form-label">Contract</label>
+          <select class="form-input">
+            <option>MNQ — Micro E-mini Nasdaq</option>
+            <option>MYM — Micro E-mini Dow</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Direction</label>
+          <div class="flex items-center gap-0 mt-0.5">
+            <button class="font-display text-[11px] font-semibold px-4 py-[7px] rounded-l cursor-pointer" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;">Long</button>
+            <button class="font-display text-[11px] font-medium px-4 py-[7px] rounded-r cursor-pointer" style="background:rgba(13,17,23,0.6);border:1px solid rgba(48,54,61,0.25);border-left:none;color:#6E7681;">Short</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Entry Price + Exit Price -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="form-label">Entry Price</label>
+          <input type="text" class="form-input tabular-nums" value="19,842.50">
+        </div>
+        <div>
+          <label class="form-label">Exit Price</label>
+          <input type="text" class="form-input tabular-nums" value="19,922.50">
+        </div>
+      </div>
+
+      <!-- Stopped out checkbox -->
+      <div class="flex justify-end" style="margin-top:4px;margin-bottom:8px;">
+        <label class="flex items-center gap-1.5 cursor-pointer" style="font-size:11px;color:#6E7681;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;background:rgba(48,54,61,0.15);border:1px solid rgba(48,54,61,0.35);"></span>
+          Stopped out
+        </label>
+        <span style="font-size:9px;color:#484F58;margin-left:8px;align-self:center;">Auto-fills exit from stop loss</span>
+      </div>
+
+      <!-- Row 3: Entry Time + Exit Time -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="form-label">Entry Time</label>
+          <input type="text" class="form-input tabular-nums" value="03/12/2026 09:32:14">
+        </div>
+        <div>
+          <label class="form-label">Exit Time</label>
+          <input type="text" class="form-input tabular-nums" value="03/12/2026 09:57:04">
+        </div>
+      </div>
+
+      <!-- Row 4: Size + Fees + Stop Loss -->
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="form-label">Size</label>
+          <input type="text" class="form-input tabular-nums" value="1">
+        </div>
+        <div>
+          <label class="form-label">Fees</label>
+          <div class="relative">
+            <input type="text" class="form-input tabular-nums" value="2.96">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-label-tertiary">auto</span>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Stop Loss <span style="color:#6E7681;font-weight:400;letter-spacing:0.04em;font-size:9px">(optional)</span></label>
+          <input type="text" class="form-input tabular-nums" placeholder="19,802.50" value="19,802.50">
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto-calculated section -->
+    <div class="rounded px-3 py-2.5 mt-4 mb-3" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.12);">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-label-tertiary uppercase tracking-wider font-medium">P&L</span>
+          <span class="font-display text-[14px] font-bold tabular-nums gain-text">+$400.00</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-label-tertiary uppercase tracking-wider font-medium">Duration</span>
+          <span class="font-display text-[13px] font-semibold tabular-nums text-label-primary">24m 50s</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-label-tertiary uppercase tracking-wider font-medium">Risk</span>
+          <span class="font-display text-[13px] font-semibold tabular-nums" style="color:#EF4444">$200.00</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-label-tertiary uppercase tracking-wider font-medium">R:R</span>
+          <span class="font-display text-[13px] font-bold tabular-nums" style="color:#00D4AA">2.0:1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="flex items-center justify-between">
+      <button class="btn-secondary">Add &amp; Continue</button>
+      <button class="btn-primary">Add Trade</button>
+    </div>
+    <div class="text-center mt-2">
+      <span class="text-[10px] text-label-tertiary">Trade will be added to Mar 12, 2026 session</span>
+    </div>
+  </div>
+</body>
+</html>

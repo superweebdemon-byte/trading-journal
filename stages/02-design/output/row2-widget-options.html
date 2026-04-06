@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Row 2 Widget Options — Below Behavioral Signals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #0D1117;
+      margin: 0;
+      padding: 32px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .card {
+      background: #161B22;
+      border: 1px solid rgba(92,92,122,0.12);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .card-header {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6E7681;
+      padding: 12px 16px 4px;
+    }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .label-text { font-size: 10px; color: #6E7681; }
+    .value-text { font-family: 'Fira Code', monospace; font-variant-numeric: tabular-nums; }
+
+    /* Donut chart via conic-gradient */
+    .donut {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      position: relative;
+    }
+    .donut-hole {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: #161B22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    /* Sparkline bars */
+    .spark-bar {
+      border-radius: 2px 2px 0 0;
+      min-width: 1px;
+    }
+
+    /* Option labels */
+    .option-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #00D4AA;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: 400px; display: flex; flex-direction: column; gap: 40px;">
+
+    <!-- ============================================ -->
+    <!-- OPTION A: Win Rate Ring + Quick Stats        -->
+    <!-- ============================================ -->
+    <div>
+      <div class="option-label">Option A — Win Rate Ring + Quick Stats</div>
+      <div class="card" id="option-a">
+        <div class="card-header">Session Snapshot</div>
+        <div style="padding: 12px 16px 16px; display: flex; gap: 16px; align-items: center;">
+          <!-- Donut -->
+          <div style="flex-shrink: 0;">
+            <div class="donut" style="background: conic-gradient(#34D399 0deg 237.6deg, rgba(239,68,68,0.7) 237.6deg 360deg);">
+              <div class="donut-hole">
+                <span style="font-family: 'Fira Code', monospace; font-size: 18px; font-weight: 700; color: #E6EDF3; line-height: 1;" class="tabular-nums">66%</span>
+                <span style="font-size: 9px; color: #6E7681; margin-top: 1px;">win rate</span>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 6px;">
+              <div style="display: flex; align-items: center; gap: 3px;">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #34D399;"></div>
+                <span style="font-size: 9px; color: #8B949E;">19W</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 3px;">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: rgba(239,68,68,0.7);"></div>
+                <span style="font-size: 9px; color: #8B949E;">10L</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Avg Winner -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #8B949E;">Avg Winner</span>
+              <span class="value-text" style="font-size: 12px; font-weight: 600; color: #34D399;">+$187.50</span>
+            </div>
+            <!-- Avg Loser -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #8B949E;">Avg Loser</span>
+              <span class="value-text" style="font-size: 12px; font-weight: 600; color: #EF4444;">-$142.30</span>
+            </div>
+            <!-- divider -->
+            <div style="height: 1px; background: rgba(92,92,122,0.12);"></div>
+            <!-- Profit Factor -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #8B949E;">Profit Factor</span>
+              <span class="value-text" style="font-size: 12px; font-weight: 700; color: #E6EDF3;">2.51</span>
+            </div>
+            <!-- Avg Hold Time -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #8B949E;">Avg Hold Time</span>
+              <span class="value-text" style="font-size: 12px; font-weight: 600; color: #E6EDF3;">4m 22s</span>
+            </div>
+            <!-- Expectancy -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #8B949E;">Expectancy</span>
+              <span class="value-text" style="font-size: 12px; font-weight: 600; color: #00D4AA;">+$73.40</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION B: Daily P&L Sparkline (last 10 days) -->
+    <!-- ============================================ -->
+    <div>
+      <div class="option-label">Option B — Daily P&L Sparkline</div>
+      <div class="card" id="option-b">
+        <div class="card-header">Last 10 Sessions</div>
+        <div style="padding: 8px 16px 14px;">
+          <!-- Sparkline bar chart -->
+          <div style="display: flex; align-items: flex-end; gap: 6px; height: 100px; position: relative;">
+            <!-- Zero line -->
+            <div style="position: absolute; left: 0; right: 0; bottom: 50px; height: 1px; background: rgba(92,92,122,0.25);"></div>
+
+            <!-- Bars — 10 days of sample data -->
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 35px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">25</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 18px; background: linear-gradient(to bottom, rgba(239,68,68,0.15), rgba(239,68,68,0.6)); border-radius: 0 0 2px 2px; position: absolute; top: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">26</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 48px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">27</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 22px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">28</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 30px; background: linear-gradient(to bottom, rgba(239,68,68,0.15), rgba(239,68,68,0.6)); border-radius: 0 0 2px 2px; position: absolute; top: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">31</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 40px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">1</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 12px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">2</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 8px; background: linear-gradient(to bottom, rgba(239,68,68,0.15), rgba(239,68,68,0.6)); border-radius: 0 0 2px 2px; position: absolute; top: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">3</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 44px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">4</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative;">
+              <div class="spark-bar" style="width: 100%; height: 28px; background: linear-gradient(to top, rgba(52,211,153,0.15), rgba(52,211,153,0.6)); position: absolute; bottom: 50px;"></div>
+              <span style="font-size: 8px; color: #6E7681; position: absolute; bottom: -14px;">5</span>
+            </div>
+          </div>
+
+          <!-- Summary row -->
+          <div style="display: flex; justify-content: space-between; margin-top: 22px; padding-top: 8px; border-top: 1px solid rgba(92,92,122,0.12);">
+            <div style="text-align: center;">
+              <div style="font-size: 9px; color: #6E7681; margin-bottom: 2px;">Green Days</div>
+              <span class="value-text" style="font-size: 14px; font-weight: 700; color: #34D399;">7</span>
+              <span style="font-size: 10px; color: #6E7681;">/10</span>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 9px; color: #6E7681; margin-bottom: 2px;">Best Day</div>
+              <span class="value-text" style="font-size: 14px; font-weight: 700; color: #34D399;">+$412</span>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 9px; color: #6E7681; margin-bottom: 2px;">Worst Day</div>
+              <span class="value-text" style="font-size: 14px; font-weight: 700; color: #EF4444;">-$186</span>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 9px; color: #6E7681; margin-bottom: 2px;">Net 10d</div>
+              <span class="value-text" style="font-size: 14px; font-weight: 700; color: #00D4AA;">+$1,247</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- OPTION C: Streak + Session Grade             -->
+    <!-- ============================================ -->
+    <div>
+      <div class="option-label">Option C — Streak + Session Grade</div>
+      <div class="card" id="option-c">
+        <div class="card-header">Momentum</div>
+        <div style="padding: 8px 16px 14px; display: flex; flex-direction: column; gap: 12px;">
+
+          <!-- Current Streak -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: #8B949E;">Current Streak</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span class="value-text" style="font-size: 20px; font-weight: 700; color: #34D399; line-height: 1;">4W</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 12V4M8 4L4 8M8 4L12 8" stroke="#34D399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Streak visualizer — last 12 trades -->
+            <div style="display: flex; gap: 3px;">
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: rgba(239,68,68,0.6);"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: rgba(239,68,68,0.6);"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: rgba(239,68,68,0.6);"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399;"></div>
+              <div style="flex: 1; height: 4px; border-radius: 2px; background: #34D399; opacity: 0.4;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 3px;">
+              <span style="font-size: 8px; color: #6E7681;">12 trades ago</span>
+              <span style="font-size: 8px; color: #6E7681;">latest</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="height: 1px; background: rgba(92,92,122,0.12);"></div>
+
+          <!-- Session Grade -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 10px; color: #8B949E;">Today's Discipline Grade</span>
+              <div style="display: flex; align-items: baseline; gap: 4px;">
+                <span style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; color: #34D399; line-height: 1;">A</span>
+                <span style="font-size: 10px; color: #6E7681;">/ Clean</span>
+              </div>
+            </div>
+
+            <!-- Grade breakdown -->
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 9px; color: #8B949E; width: 80px;">No revenge</span>
+                <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(52,211,153,0.15);">
+                  <div style="width: 100%; height: 100%; border-radius: 2px; background: #34D399;"></div>
+                </div>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8L7 12L13 4" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 9px; color: #8B949E; width: 80px;">Trade limit</span>
+                <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(52,211,153,0.15);">
+                  <div style="width: 100%; height: 100%; border-radius: 2px; background: #34D399;"></div>
+                </div>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8L7 12L13 4" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 9px; color: #8B949E; width: 80px;">Time window</span>
+                <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(245,158,11,0.15);">
+                  <div style="width: 75%; height: 100%; border-radius: 2px; background: #F59E0B;"></div>
+                </div>
+                <span style="font-size: 9px; color: #F59E0B; font-weight: 600;">~</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 9px; color: #8B949E; width: 80px;">Stop discipline</span>
+                <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(52,211,153,0.15);">
+                  <div style="width: 100%; height: 100%; border-radius: 2px; background: #34D399;"></div>
+                </div>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8L7 12L13 4" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

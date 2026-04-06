@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-Multiple Distribution — Concept Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0D1117;
+    color: #E6EDF3;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00D4AA;
+    margin-bottom: -16px;
+  }
+
+  .tile {
+    width: 420px;
+    height: 280px;
+    background: #161B22;
+    border: 1px solid #21262D;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .tile-title {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #8B949E;
+  }
+
+  .tile-subtitle {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #484F58;
+  }
+
+  .variant-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #00D4AA;
+    background: rgba(0, 212, 170, 0.08);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    align-self: flex-start;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #484F58;
+    flex-shrink: 0;
+  }
+
+  .stats-row .stat-value {
+    color: #8B949E;
+    font-weight: 500;
+  }
+
+  .stats-row .stat-positive { color: #34D399; }
+  .stats-row .stat-negative { color: #EF4444; }
+
+  /* ── Variant A: Classic Histogram ── */
+  .histogram-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+  }
+
+  .histogram-bars {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    min-height: 0;
+  }
+
+  .histogram-bars .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    position: relative;
+  }
+
+  .histogram-bars .bar {
+    width: 100%;
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    transition: opacity 0.2s;
+    min-height: 2px;
+  }
+
+  .histogram-bars .bar.loss { background: #EF4444; }
+  .histogram-bars .bar.win { background: #00D4AA; }
+  .histogram-bars .bar.peak { box-shadow: 0 0 8px rgba(0, 212, 170, 0.3); }
+  .histogram-bars .bar.peak-loss { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+
+  .bar-count {
+    font-family: 'Fira Code', monospace;
+    font-size: 8px;
+    color: #484F58;
+    margin-bottom: 2px;
+  }
+
+  .histogram-axis {
+    display: flex;
+    gap: 3px;
+    border-top: 1px solid #21262D;
+    padding-top: 3px;
+  }
+
+  .histogram-axis span {
+    flex: 1;
+    text-align: center;
+    font-family: 'Fira Code', monospace;
+    font-size: 7px;
+    color: #484F58;
+  }
+
+  .mean-marker {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: #00D4AA;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Variant B: Compact Horizontal Bars ── */
+  .hbar-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hbar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 14px;
+  }
+
+  .hbar-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 8px;
+    color: #484F58;
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .hbar-track {
+    flex: 1;
+    height: 10px;
+    position: relative;
+  }
+
+  .hbar-fill {
+    height: 100%;
+    border-radius: 2px;
+    min-width: 2px;
+  }
+
+  .hbar-fill.loss { background: #EF4444; }
+  .hbar-fill.win { background: #00D4AA; }
+
+  .hbar-count {
+    font-family: 'Fira Code', monospace;
+    font-size: 8px;
+    color: #484F58;
+    width: 18px;
+    flex-shrink: 0;
+  }
+
+  .hbar-divider {
+    height: 1px;
+    background: #30363D;
+    margin: 2px 0 2px 42px;
+    position: relative;
+  }
+
+  .hbar-divider::after {
+    content: '0R';
+    position: absolute;
+    right: 0;
+    top: -6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 7px;
+    color: #30363D;
+  }
+
+  /* ── Variant C: Bell Curve Overlay ── */
+  .chart-area {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
+
+  .chart-area canvas {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>R-Multiple Distribution — Concept Variations</h1>
+
+<!-- ━━ Variant A: Classic Histogram ━━ -->
+<div class="variant-label">A. Classic Histogram</div>
+<div class="tile" id="tile-a">
+  <div class="tile-header">
+    <span class="tile-title">R-Multiple Distribution</span>
+    <span class="tile-subtitle">84 trades</span>
+  </div>
+  <div class="mean-marker">Mean R: +0.38</div>
+  <div class="histogram-area">
+    <div class="histogram-bars" id="histBars"></div>
+    <div class="histogram-axis" id="histAxis"></div>
+  </div>
+  <div class="stats-row">
+    <span>Mean <span class="stat-value stat-positive">+0.38R</span></span>
+    <span>Med <span class="stat-value stat-negative">-0.20R</span></span>
+    <span>Best <span class="stat-value stat-positive">+3.5R</span></span>
+    <span>Worst <span class="stat-value stat-negative">-2.1R</span></span>
+  </div>
+</div>
+
+<!-- ━━ Variant B: Compact Horizontal Bars ━━ -->
+<div class="variant-label">B. Compact Bars</div>
+<div class="tile" id="tile-b">
+  <div class="tile-header">
+    <span class="tile-title">R-Multiple Distribution</span>
+    <span class="tile-subtitle">84 trades</span>
+  </div>
+  <div class="hbar-area" id="hbarArea"></div>
+  <div class="stats-row">
+    <span>Mean <span class="stat-value stat-positive">+0.38R</span></span>
+    <span>Med <span class="stat-value stat-negative">-0.20R</span></span>
+    <span>Best <span class="stat-value stat-positive">+3.5R</span></span>
+    <span>Worst <span class="stat-value stat-negative">-2.1R</span></span>
+  </div>
+</div>
+
+<!-- ━━ Variant C: Bell Curve Overlay ━━ -->
+<div class="variant-label">C. Bell Curve Overlay</div>
+<div class="tile" id="tile-c">
+  <div class="tile-header">
+    <span class="tile-title">R-Multiple Distribution</span>
+    <span class="tile-subtitle">84 trades &middot; right-skewed</span>
+  </div>
+  <div class="chart-area">
+    <canvas id="bellCanvas"></canvas>
+  </div>
+  <div class="stats-row">
+    <span>Mean <span class="stat-value stat-positive">+0.38R</span></span>
+    <span>Med <span class="stat-value stat-negative">-0.20R</span></span>
+    <span>Best <span class="stat-value stat-positive">+3.5R</span></span>
+    <span>Worst <span class="stat-value stat-negative">-2.1R</span></span>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const buckets = [
+  { label: '-3R',   lo: -3,   hi: -2.5, count: 2  },
+  { label: '-2.5R', lo: -2.5, hi: -2,   count: 3  },
+  { label: '-2R',   lo: -2,   hi: -1.5, count: 5  },
+  { label: '-1.5R', lo: -1.5, hi: -1,   count: 12 },
+  { label: '-1R',   lo: -1,   hi: -0.5, count: 15 },
+  { label: '-0.5R', lo: -0.5, hi: 0,    count: 12 },
+  { label: '0R',    lo: 0,    hi: 0.5,  count: 8  },
+  { label: '+0.5R', lo: 0.5,  hi: 1,    count: 7  },
+  { label: '+1R',   lo: 1,    hi: 1.5,  count: 6  },
+  { label: '+1.5R', lo: 1.5,  hi: 2,    count: 5  },
+  { label: '+2R',   lo: 2,    hi: 2.5,  count: 4  },
+  { label: '+2.5R', lo: 2.5,  hi: 3,    count: 3  },
+  { label: '+3R',   lo: 3,    hi: 3.5,  count: 2  },
+];
+
+const maxCount = Math.max(...buckets.map(b => b.count));
+const peakIdx = buckets.findIndex(b => b.count === maxCount);
+
+// ── Variant A: Classic Histogram ──
+const barsEl = document.getElementById('histBars');
+const axisEl = document.getElementById('histAxis');
+
+buckets.forEach((b, i) => {
+  const col = document.createElement('div');
+  col.className = 'bar-col';
+
+  const countLabel = document.createElement('div');
+  countLabel.className = 'bar-count';
+  countLabel.textContent = b.count;
+
+  const bar = document.createElement('div');
+  const isLoss = b.hi <= 0;
+  bar.className = 'bar ' + (isLoss ? 'loss' : 'win');
+  if (i === peakIdx) bar.classList.add(isLoss ? 'peak-loss' : 'peak');
+  bar.style.height = (b.count / maxCount * 100) + '%';
+
+  col.appendChild(countLabel);
+  col.appendChild(bar);
+  barsEl.appendChild(col);
+
+  const label = document.createElement('span');
+  label.textContent = b.label;
+  axisEl.appendChild(label);
+});
+
+// ── Variant B: Compact Horizontal Bars ──
+const hbarArea = document.getElementById('hbarArea');
+
+// Reverse so highest R is at top
+const reversed = [...buckets].reverse();
+reversed.forEach((b, i) => {
+  // Insert divider between positive and negative buckets
+  const prevBucket = reversed[i - 1];
+  if (prevBucket && prevBucket.lo >= 0 && b.hi <= 0) {
+    const divider = document.createElement('div');
+    divider.className = 'hbar-divider';
+    hbarArea.appendChild(divider);
+  }
+
+  const row = document.createElement('div');
+  row.className = 'hbar-row';
+
+  const label = document.createElement('div');
+  label.className = 'hbar-label';
+  label.textContent = b.label;
+
+  const track = document.createElement('div');
+  track.className = 'hbar-track';
+
+  const fill = document.createElement('div');
+  const isLoss = b.hi <= 0;
+  fill.className = 'hbar-fill ' + (isLoss ? 'loss' : 'win');
+  fill.style.width = (b.count / maxCount * 100) + '%';
+  track.appendChild(fill);
+
+  const countEl = document.createElement('div');
+  countEl.className = 'hbar-count';
+  countEl.textContent = b.count;
+
+  row.appendChild(label);
+  row.appendChild(track);
+  row.appendChild(countEl);
+  hbarArea.appendChild(row);
+});
+
+// ── Variant C: Bell Curve with Canvas ──
+const canvas = document.getElementById('bellCanvas');
+const ctx = canvas.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
+
+function drawBellChart() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width;
+  const H = rect.height;
+  const padL = 24, padR = 12, padT = 6, padB = 18;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const barW = chartW / buckets.length - 2;
+
+  // Draw bars
+  buckets.forEach((b, i) => {
+    const x = padL + (i / buckets.length) * chartW + 1;
+    const barH = (b.count / maxCount) * chartH;
+    const y = padT + chartH - barH;
+    const isLoss = b.hi <= 0;
+
+    ctx.fillStyle = isLoss ? '#EF4444' : '#00D4AA';
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+
+  // Density curve (smoothed)
+  const points = buckets.map((b, i) => ({
+    x: padL + ((i + 0.5) / buckets.length) * chartW,
+    y: padT + chartH - (b.count / maxCount) * chartH
+  }));
+
+  // Catmull-Rom spline
+  ctx.beginPath();
+  ctx.strokeStyle = '#00D4AA';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00D4AA';
+  ctx.shadowBlur = 6;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(i - 1, 0)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(i + 2, points.length - 1)];
+
+    if (i === 0) ctx.moveTo(p1.x, p1.y);
+
+    const tension = 0.3;
+    const cp1x = p1.x + (p2.x - p0.x) * tension;
+    const cp1y = p1.y + (p2.y - p0.y) * tension;
+    const cp2x = p2.x - (p3.x - p1.x) * tension;
+    const cp2y = p2.y - (p3.y - p1.y) * tension;
+
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Fill under curve
+  ctx.lineTo(points[points.length - 1].x, padT + chartH);
+  ctx.lineTo(points[0].x, padT + chartH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
+  grad.addColorStop(0, 'rgba(0, 212, 170, 0.12)');
+  grad.addColorStop(1, 'rgba(0, 212, 170, 0.01)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Mean line at +0.38R (map to x position)
+  const meanR = 0.38;
+  const meanBucketIdx = (meanR - (-3)) / 0.5; // bucket index position
+  const meanX = padL + (meanBucketIdx / buckets.length) * chartW;
+  ctx.strokeStyle = '#00D4AA';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  ctx.moveTo(meanX, padT);
+  ctx.lineTo(meanX, padT + chartH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Mean label
+  ctx.fillStyle = '#00D4AA';
+  ctx.font = '500 9px "Fira Code", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('Mean +0.38R', meanX, padT - 0);
+
+  // X-axis labels
+  ctx.fillStyle = '#484F58';
+  ctx.font = '7px "Fira Code", monospace';
+  ctx.textAlign = 'center';
+  buckets.forEach((b, i) => {
+    if (i % 2 === 0) {
+      const x = padL + ((i + 0.5) / buckets.length) * chartW;
+      ctx.fillText(b.label, x, padT + chartH + 12);
+    }
+  });
+
+  // Y-axis marks
+  ctx.fillStyle = '#30363D';
+  ctx.font = '7px "Fira Code", monospace';
+  ctx.textAlign = 'right';
+  for (let v = 0; v <= maxCount; v += 5) {
+    const y = padT + chartH - (v / maxCount) * chartH;
+    ctx.fillText(v.toString(), padL - 4, y + 3);
+    // Grid line
+    ctx.strokeStyle = '#21262D';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(padL + chartW, y);
+    ctx.stroke();
+  }
+}
+
+// Draw on load and resize
+window.addEventListener('load', () => setTimeout(drawBellChart, 50));
+window.addEventListener('resize', drawBellChart);
+</script>
+
+</body>
+</html>

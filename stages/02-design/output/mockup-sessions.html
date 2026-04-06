@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Sessions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT:'#0D1117',50:'#0D1117',100:'#161B22',150:'#131920',200:'#161B22',300:'#21262D',400:'#262C36',500:'#2D333B',600:'#3D444D',700:'#484F58' },
+            neon: { DEFAULT:'#00D4AA',bright:'#33DDBB',dim:'#00B894',muted:'#009D7E',subtle:'rgba(0,212,170,0.12)',ring:'rgba(0,212,170,0.25)' },
+            gain: { DEFAULT:'#34D399',bright:'#6EE7B7',dim:'#10B981',bg:'rgba(52,211,153,0.06)' },
+            loss: { DEFAULT:'#EF4444',bright:'#F87171',dim:'#DC2626',bg:'rgba(239,68,68,0.06)' },
+            flat: { DEFAULT:'#6E7681',bg:'rgba(48,54,61,0.10)' },
+            label: { primary:'#E6EDF3',secondary:'#8B949E',tertiary:'#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Fira Code',monospace;-webkit-font-smoothing:antialiased;background:#0D1117;color:#E6EDF3}
+    .font-display{font-family:'Space Grotesk',sans-serif}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .tile{background:#161B22;border:1px solid rgba(48,54,61,0.12);border-radius:6px}
+    .tile-header{font-family:'Fira Code',monospace;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#6E7681}
+    .gain-text{color:#34D399}.loss-text{color:#EF4444}.neon-text{color:#00D4AA}.warn-text{color:#FFD600}
+    .pill{font-size:10px;font-weight:600;padding:1px 6px;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block}
+    .nav-link{color:#6E7681;font-size:12px;letter-spacing:0.02em;cursor:pointer;transition:color 0.15s}
+    .nav-link:hover{color:#8B949E}
+    .nav-link.active{color:#E6EDF3;background:rgba(0,212,170,0.12);padding:4px 10px;border-radius:4px}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#21262D;border-radius:2px}
+    .session-card{background:#161B22;border:1px solid rgba(48,54,61,0.12);border-radius:6px;transition:all 0.15s ease;cursor:pointer}
+    .session-card:hover{background:rgba(48,54,61,0.04);border-color:rgba(48,54,61,0.20)}
+    .session-card.win{border-left:3px solid rgba(52,211,153,0.50)}
+    .session-card.loss{border-left:3px solid rgba(239,68,68,0.50)}
+    .session-card.flat-day{border-left:3px solid rgba(48,54,61,0.30)}
+    .expanded-trade{background:rgba(22,27,34,0.5);border-top:1px solid rgba(48,54,61,0.10)}
+    .month-strip{background:rgba(0,212,170,0.04);border:1px solid rgba(48,54,61,0.12);border-radius:6px}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP NAV -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background:rgba(13,17,23,0.95)">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link px-2.5 py-1">Dashboard</span>
+        <span class="nav-link px-2.5 py-1">Calendar</span>
+        <span class="nav-link active">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>TOPSTEP X</span>
+        <span class="text-void-500">|</span>
+        <span>49 sessions</span>
+        <span class="text-void-500">|</span>
+        <span>Nov 2025 – Mar 2026</span>
+      </div>
+      <button class="font-display text-[11px] font-semibold px-3 py-1.5 rounded" style="background:#00D4AA;border:1px solid #00D4AA;color:#0D1117;cursor:pointer;">+ Import CSV</button>
+    </div>
+  </header>
+
+  <main class="p-2 w-full max-w-[1280px] mx-auto">
+
+    <!-- FILTER CHIPS -->
+    <div class="flex items-center gap-1.5 mb-2 flex-wrap">
+      <span class="text-[10px] text-label-tertiary font-display font-semibold mr-1">Filters:</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display" style="background:rgba(0,212,170,0.15);color:#00D4AA;border:1px solid rgba(0,212,170,0.25);">All Dates</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">MYM</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">MNQ</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Long</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Short</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Win</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Loss</span>
+      <span class="text-[10px] px-2.5 py-1 rounded cursor-pointer font-display text-label-tertiary" style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.15);">Breakeven</span>
+    </div>
+
+    <!-- MONTHLY SUMMARY STRIP -->
+    <div class="grid grid-cols-5 gap-1.5 mb-2">
+      <div class="month-strip px-3 py-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Mar '26</div>
+            <span class="font-display text-sm font-bold tabular-nums gain-text">+$680</span>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-label-secondary tabular-nums">8 trades</div>
+            <div class="text-[10px] text-label-tertiary">5 sessions</div>
+          </div>
+        </div>
+      </div>
+      <div class="month-strip px-3 py-2" style="border-color:rgba(52,211,153,0.15)">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider font-semibold font-display" style="color:#6EE7B7">Feb '26</div>
+            <span class="font-display text-sm font-bold tabular-nums gain-text">+$875</span>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-label-secondary tabular-nums">15 trades</div>
+            <div class="text-[10px] text-label-tertiary">11 sessions</div>
+          </div>
+        </div>
+      </div>
+      <div class="month-strip px-3 py-2" style="border-color:rgba(239,68,68,0.15)">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Jan '26</div>
+            <span class="font-display text-sm font-bold tabular-nums loss-text">-$42</span>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-label-secondary tabular-nums">9 trades</div>
+            <div class="text-[10px] text-label-tertiary">7 sessions</div>
+          </div>
+        </div>
+      </div>
+      <div class="month-strip px-3 py-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Dec '25</div>
+            <span class="font-display text-sm font-bold tabular-nums gain-text">+$28</span>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-label-secondary tabular-nums">8 trades</div>
+            <div class="text-[10px] text-label-tertiary">6 sessions</div>
+          </div>
+        </div>
+      </div>
+      <div class="month-strip px-3 py-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-label-tertiary uppercase tracking-wider font-semibold font-display">Nov '25</div>
+            <span class="font-display text-sm font-bold tabular-nums gain-text">+$265</span>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-label-secondary tabular-nums">13 trades</div>
+            <div class="text-[10px] text-label-tertiary">10 sessions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONTH HEADING -->
+    <div class="flex items-center justify-between mb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] font-display font-semibold text-label-primary">March 2026</span>
+        <span class="text-[10px] text-label-tertiary">&middot; 5 sessions &middot; 8 trades</span>
+      </div>
+    </div>
+
+    <!-- SESSION LIST -->
+    <div class="space-y-1.5">
+
+      <!-- Session 1: Mar 12 — Win (EXPANDED) -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Mar 12, 2026 <span class="text-[10px] text-label-tertiary font-normal">Wed</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$400.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">100%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">24m 50s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="transform:rotate(180deg)"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <!-- Expanded trade detail -->
+        <div class="expanded-trade px-3 py-1.5">
+          <table class="w-full text-[10px]">
+            <thead>
+              <tr class="text-label-tertiary text-[10px] uppercase tracking-wider">
+                <th class="text-left font-medium px-2 py-1">Time</th>
+                <th class="text-left font-medium px-2 py-1">Contract</th>
+                <th class="text-center font-medium px-2 py-1">Side</th>
+                <th class="text-right font-medium px-2 py-1">Entry</th>
+                <th class="text-right font-medium px-2 py-1">Exit</th>
+                <th class="text-right font-medium px-2 py-1">P&L</th>
+                <th class="text-right font-medium px-2 py-1">Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-void-200">
+                <td class="px-2 py-1.5 tabular-nums text-label-primary">09:32:14</td>
+                <td class="px-2 py-1.5"><span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span></td>
+                <td class="px-2 py-1.5 text-center"><span class="gain-text">Long</span></td>
+                <td class="px-2 py-1.5 text-right tabular-nums text-label-secondary">19,842.50</td>
+                <td class="px-2 py-1.5 text-right tabular-nums text-label-secondary">19,922.50</td>
+                <td class="px-2 py-1.5 text-right tabular-nums gain-text font-medium">+$400.00</td>
+                <td class="px-2 py-1.5 text-right tabular-nums text-label-tertiary">24m 50s</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Session 2: Mar 11 — Win (collapsed) -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Mar 11, 2026 <span class="text-[10px] text-label-tertiary font-normal">Tue</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$400.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">100%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">13m 0s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session 3: Mar 10 — Loss -->
+      <div class="session-card loss">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Mar 10, 2026 <span class="text-[10px] text-label-tertiary font-normal">Mon</span></div>
+            <span class="loss-text font-bold tabular-nums text-[13px]">-$200.00</span>
+            <span class="pill loss-text" style="background:rgba(239,68,68,0.10)">LOSS</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="loss-text font-bold tabular-nums">0%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">2m 27s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(48,54,61,0.15);color:#8B949E">MYM</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session 4: Mar 9 — Win -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Mar 9, 2026 <span class="text-[10px] text-label-tertiary font-normal">Sun</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$400.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">100%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">2m 0s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(48,54,61,0.15);color:#8B949E">MYM</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session 5: Mar 6 — Win (tiny) -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Mar 6, 2026 <span class="text-[10px] text-label-tertiary font-normal">Thu</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$2.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">100%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">10m 26s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feb divider -->
+      <div class="flex items-center gap-3 pt-1">
+        <div class="h-px flex-1 bg-void-300"></div>
+        <span class="text-[11px] text-label-tertiary font-display font-semibold">February 2026</span>
+        <div class="h-px flex-1 bg-void-300"></div>
+      </div>
+
+      <!-- Session: Feb 28 — Win (multi-trade) -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Feb 28, 2026 <span class="text-[10px] text-label-tertiary font-normal">Sat</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$186.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">3</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">66.7%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">45m 12s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div class="flex items-center gap-1">
+                <span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span>
+                <span class="pill" style="background:rgba(48,54,61,0.15);color:#8B949E">MYM</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session: Feb 26 — Loss -->
+      <div class="session-card loss">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Feb 26, 2026 <span class="text-[10px] text-label-tertiary font-normal">Thu</span></div>
+            <span class="loss-text font-bold tabular-nums text-[13px]">-$130.00</span>
+            <span class="pill loss-text" style="background:rgba(239,68,68,0.10)">LOSS</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">2</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="loss-text font-bold tabular-nums">0%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">6m 18s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(0,212,170,0.15);color:#00D4AA">MNQ</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session: Feb 24 — Win -->
+      <div class="session-card win">
+        <div class="px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="font-display font-semibold text-[12px] text-label-primary">Feb 24, 2026 <span class="text-[10px] text-label-tertiary font-normal">Tue</span></div>
+            <span class="gain-text font-bold tabular-nums text-[13px]">+$400.00</span>
+            <span class="pill gain-text" style="background:rgba(52,211,153,0.10)">WIN</span>
+          </div>
+          <div class="flex items-center gap-6 text-[11px]">
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Trades</div>
+              <div class="text-label-primary font-bold tabular-nums">1</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Win Rate</div>
+              <div class="gain-text font-bold tabular-nums">100%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Duration</div>
+              <div class="text-label-secondary tabular-nums">15m 33s</div>
+            </div>
+            <div class="text-center">
+              <div class="text-label-tertiary text-[10px] uppercase tracking-wider">Contracts</div>
+              <div><span class="pill" style="background:rgba(48,54,61,0.15);color:#8B949E">MYM</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="4,6 8,10 12,6" stroke="#6E7681" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Load more -->
+    <div class="text-center py-2">
+      <span class="text-[11px] text-label-tertiary cursor-pointer hover:text-label-secondary font-display">Load more sessions (40 remaining)</span>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-1 pt-2.5 border-t border-void-300 flex items-center justify-between px-1">
+      <span class="text-[10px] text-label-tertiary">TradeLog v1.0</span>
+      <div class="flex items-center gap-3">
+        <span class="text-[10px] text-label-tertiary tabular-nums">Last Import: Mar 22, 2026</span>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-gain"></div>
+          <span class="text-[10px] text-label-tertiary">Connected</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal — Empty State</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            void: { DEFAULT:'#0D1117',50:'#0D1117',100:'#161B22',150:'#131920',200:'#161B22',300:'#21262D',400:'#262C36',500:'#2D333B',600:'#3D444D',700:'#484F58' },
+            neon: { DEFAULT:'#00D4AA',bright:'#33DDBB',dim:'#00B894',muted:'#009D7E',subtle:'rgba(0,212,170,0.12)',ring:'rgba(0,212,170,0.25)' },
+            gain: { DEFAULT:'#34D399',bright:'#6EE7B7',dim:'#10B981',bg:'rgba(52,211,153,0.06)' },
+            loss: { DEFAULT:'#EF4444',bright:'#F87171',dim:'#DC2626',bg:'rgba(239,68,68,0.06)' },
+            flat: { DEFAULT:'#6E7681',bg:'rgba(48,54,61,0.10)' },
+            label: { primary:'#E6EDF3',secondary:'#8B949E',tertiary:'#6E7681' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Fira Code',monospace;-webkit-font-smoothing:antialiased;background:#0D1117;color:#E6EDF3}
+    .font-display{font-family:'Space Grotesk',sans-serif}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .nav-link{color:#6E7681;font-size:12px;letter-spacing:0.02em;cursor:pointer;transition:color 0.15s}
+    .nav-link:hover{color:#8B949E}
+    .nav-link.active{color:#E6EDF3;background:rgba(0,212,170,0.12);padding:4px 10px;border-radius:4px}
+    .gain-text{color:#34D399}.loss-text{color:#EF4444}.neon-text{color:#00D4AA}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#21262D;border-radius:2px}
+    .drop-zone{border:2px dashed rgba(48,54,61,0.30);border-radius:8px;padding:32px 24px;text-align:center;transition:all 0.2s;cursor:pointer}
+    .drop-zone:hover{border-color:rgba(0,212,170,0.35);background:rgba(0,212,170,0.03)}
+    .btn-outline{
+      background:transparent;
+      border:1px solid rgba(0,212,170,0.40);
+      color:#00D4AA;
+      padding:8px 20px;
+      border-radius:4px;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      font-family:'Space Grotesk',sans-serif;
+      transition:all 0.15s;
+    }
+    .btn-outline:hover{background:rgba(0,212,170,0.08);border-color:#00D4AA}
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP NAV -->
+  <header class="flex items-center justify-between px-5 py-2.5 border-b border-void-300" style="background:rgba(13,17,23,0.95)">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-sm text-label-primary tracking-tight">TradeLog</span>
+      </div>
+      <nav class="flex items-center gap-1 font-display">
+        <span class="nav-link active">Dashboard</span>
+        <span class="nav-link px-2.5 py-1">Calendar</span>
+        <span class="nav-link px-2.5 py-1">Sessions</span>
+        <span class="nav-link px-2.5 py-1">Settings</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 text-[11px] text-label-tertiary tabular-nums">
+        <span>0 trades</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- EMPTY STATE CENTER CONTENT -->
+  <main class="flex-1 flex items-center justify-center">
+    <div class="flex flex-col items-center" style="width:600px;max-width:90vw;">
+
+      <!-- Logo (larger) -->
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-3.5 h-3.5 rounded-full" style="background:#00D4AA"></div>
+        <span class="font-display font-bold text-2xl text-label-primary tracking-tight">TradeLog</span>
+      </div>
+
+      <!-- Welcome text -->
+      <h1 class="font-display text-2xl font-bold text-label-primary mb-1.5">Welcome to TradeLog</h1>
+      <p class="text-[14px] text-label-tertiary mb-8">Get started by adding your first trades</p>
+
+      <!-- Big drag-drop zone -->
+      <div class="drop-zone w-full mb-5">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="mx-auto mb-2.5">
+          <path d="M16 4V20M16 20L10 14M16 20L22 14" stroke="#6E7681" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 22V26C4 27.1046 4.89543 28 6 28H26C27.1046 28 28 27.1046 28 26V22" stroke="#6E7681" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="font-display text-[14px] text-label-secondary font-medium mb-1">Drag and drop your Topstep CSV here</div>
+        <div class="text-[11px] text-label-tertiary">or <span class="neon-text cursor-pointer">browse files</span> &middot; Accepts .csv from Topstep X</div>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-4 w-full mb-5" style="max-width:300px;">
+        <div class="flex-1 h-px" style="background:rgba(48,54,61,0.30)"></div>
+        <span class="text-[11px] text-label-tertiary font-medium">or</span>
+        <div class="flex-1 h-px" style="background:rgba(48,54,61,0.30)"></div>
+      </div>
+
+      <!-- Manual entry button -->
+      <button class="btn-outline mb-6">+ Enter Trade Manually</button>
+
+      <!-- Footnote -->
+      <p class="text-[10px] text-label-tertiary text-center" style="max-width:320px;">You can always import more trades or add entries from the nav bar</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="px-5 py-2.5 border-t border-void-300 flex items-center justify-between">
+    <span class="text-[10px] text-label-tertiary">TradeLog v0.1</span>
+    <span class="text-[10px] text-label-tertiary tabular-nums">Futures Day Trading Journal</span>
+  </footer>
+
+</body>
+</html>

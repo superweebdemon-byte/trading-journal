@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeLog v3 — Data Canvas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Sora', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            canvas: {
+              950: '#0A0C10',
+              900: '#0F1117',
+              850: '#13151D',
+              800: '#181B25',
+              750: '#1D2030',
+              700: '#252838',
+              600: '#343850',
+              500: '#4A4E68',
+            },
+            teal: {
+              DEFAULT: '#2DD4BF',
+              bright: '#5EEAD4',
+              dim: '#14B8A6',
+              muted: '#0D9488',
+              subtle: '#134E4A',
+            },
+            gain: {
+              DEFAULT: '#34D399',
+              bright: '#6EE7B7',
+              bg: 'rgba(52, 211, 153, 0.08)',
+              bar: 'rgba(52, 211, 153, 0.7)',
+            },
+            loss: {
+              DEFAULT: '#F87171',
+              bright: '#FCA5A5',
+              bg: 'rgba(248, 113, 113, 0.08)',
+              bar: 'rgba(248, 113, 113, 0.7)',
+            },
+            flat: {
+              DEFAULT: '#94A3B8',
+              bg: 'rgba(148, 163, 184, 0.08)',
+            },
+            label: {
+              primary: '#E2E8F0',
+              secondary: '#94A3B8',
+              tertiary: '#64748B',
+            },
+            /* Light mode overrides */
+            surface: {
+              50: '#FAFBFC',
+              100: '#F1F3F5',
+              200: '#E5E8EC',
+              300: '#D1D5DB',
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Mono', monospace; -webkit-font-smoothing: antialiased; }
+    .font-display { font-family: 'Sora', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* Dark default */
+    .dark body { background: #0A0C10; color: #E2E8F0; }
+    html:not(.dark) body { background: #FAFBFC; color: #1E293B; }
+
+    /* Grid noise texture overlay */
+    .noise-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Scanline effect for that terminal feel */
+    .scanlines::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+
+    /* Tile borders */
+    .tile {
+      border: 1px solid rgba(45, 212, 191, 0.08);
+      background: rgba(15, 17, 23, 0.6);
+      backdrop-filter: blur(8px);
+      position: relative;
+    }
+    html:not(.dark) .tile {
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .tile-header {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 12px 16px 8px;
+    }
+    .dark .tile-header { color: #64748B; }
+    html:not(.dark) .tile-header { color: #94A3B8; }
+
+    /* Heatmap cells */
+    .heat-cell {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 3px;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+      min-height: 28px;
+    }
+    .heat-cell:hover { transform: scale(1.25); z-index: 10; position: relative; }
+    /* Stronger heatmap colors in light mode */
+    html:not(.dark) .heat-cell.bg-gain { background: #059669 !important; }
+    html:not(.dark) .heat-cell.bg-loss { background: #DC2626 !important; }
+
+    /* Bar chart bars */
+    .bar { transition: height 0.3s ease, opacity 0.15s ease; border-radius: 2px 2px 0 0; }
+    .bar:hover { opacity: 0.85; }
+
+    /* Equity line path */
+    .equity-path {
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      animation: drawLine 2s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Glow effects */
+    .glow-teal { box-shadow: 0 0 20px rgba(45, 212, 191, 0.1), inset 0 1px 0 rgba(45, 212, 191, 0.05); }
+    .dark .stat-value { color: #E2E8F0; }
+    html:not(.dark) .stat-value { color: #1E293B; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    .dark ::-webkit-scrollbar-thumb { background: #252838; border-radius: 3px; }
+    html:not(.dark) ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+
+    /* Session row hover */
+    .session-row { transition: background 0.15s ease; cursor: pointer; }
+    .dark .session-row:hover { background: rgba(45, 212, 191, 0.04); }
+    html:not(.dark) .session-row:hover { background: rgba(45, 212, 191, 0.06); }
+
+    /* Pill tags */
+    .pill {
+      font-size: 10px; font-weight: 500;
+      padding: 2px 8px; border-radius: 3px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Toggle switch */
+    .theme-toggle {
+      width: 40px; height: 20px; border-radius: 10px;
+      cursor: pointer; position: relative;
+      transition: background 0.2s ease;
+    }
+    .dark .theme-toggle { background: #252838; }
+    html:not(.dark) .theme-toggle { background: #D1D5DB; }
+    .theme-toggle::after {
+      content: ''; position: absolute;
+      width: 16px; height: 16px; border-radius: 50%;
+      top: 2px; transition: left 0.2s ease;
+    }
+    .dark .theme-toggle::after { left: 2px; background: #2DD4BF; }
+    html:not(.dark) .theme-toggle::after { left: 22px; background: #1E293B; }
+
+    /* Sparkline dots */
+    .spark-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      transition: transform 0.15s ease;
+    }
+    .spark-dot:hover { transform: scale(2); }
+
+    /* Light mode adjustments */
+    html:not(.dark) .stat-label { color: #64748B; }
+    html:not(.dark) .gain-text { color: #059669; }
+    html:not(.dark) .loss-text { color: #DC2626; }
+    .dark .gain-text { color: #34D399; }
+    .dark .loss-text { color: #F87171; }
+  </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+  <div class="noise-overlay"></div>
+
+  <!-- TOP BAR -->
+  <header class="relative z-10 flex items-center justify-between px-6 py-3 border-b dark:border-canvas-700 border-surface-200">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="text-teal">
+          <path d="M2 14L6 8L10 11L14 5L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 14L6 8L10 11L14 5L18 9V16H2V14Z" fill="currentColor" opacity="0.15"/>
+        </svg>
+        <span class="font-display font-semibold text-sm tracking-tight">TradeLog</span>
+      </div>
+      <div class="h-4 w-px dark:bg-canvas-700 bg-surface-300"></div>
+      <span class="text-[10px] tracking-widest uppercase dark:text-label-tertiary text-gray-400 font-medium">Data Canvas</span>
+    </div>
+
+    <div class="flex items-center gap-5">
+      <span class="text-[10px] dark:text-label-tertiary text-gray-400 tabular-nums">Nov 2025 — Mar 2026</span>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] dark:text-label-tertiary text-gray-400">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline -mt-px"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </span>
+        <div class="theme-toggle" onclick="document.documentElement.classList.toggle('dark')" role="button" tabindex="0" aria-label="Toggle theme"></div>
+        <span class="text-[10px] dark:text-label-tertiary text-gray-400">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline -mt-px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 p-4 max-w-[1440px] mx-auto">
+
+    <!-- ROW 1: KPI Ribbon -->
+    <div class="grid grid-cols-7 gap-3 mb-4">
+      <!-- Net P&L -->
+      <div class="tile rounded-lg px-4 py-3 glow-teal col-span-1">
+        <div class="tile-header px-0 pt-0 pb-1">Net P&L</div>
+        <div class="stat-value text-xl font-bold tabular-nums gain-text">+$2,572.50</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">85 trades</div>
+      </div>
+      <!-- Win Rate -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Win Rate</div>
+        <div class="stat-value text-xl font-bold tabular-nums">48.2%</div>
+        <div class="flex items-center gap-1 mt-1">
+          <div class="h-1 rounded-full bg-gain flex-grow" style="width:48%"></div>
+          <div class="h-1 rounded-full bg-loss-bar flex-grow" style="width:52%"></div>
+        </div>
+      </div>
+      <!-- Profit Factor -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Profit Factor</div>
+        <div class="stat-value text-xl font-bold tabular-nums">1.39</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1">Gross W/L ratio</div>
+      </div>
+      <!-- Avg Win -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Avg Win</div>
+        <div class="stat-value text-xl font-bold tabular-nums gain-text">+$253.51</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">41 wins</div>
+      </div>
+      <!-- Avg Loss -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Avg Loss</div>
+        <div class="stat-value text-xl font-bold tabular-nums loss-text">-$163.61</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">33 losses</div>
+      </div>
+      <!-- Best Day -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Best Day</div>
+        <div class="stat-value text-xl font-bold tabular-nums gain-text">+$401</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1">Multiple days</div>
+      </div>
+      <!-- Worst Day -->
+      <div class="tile rounded-lg px-4 py-3">
+        <div class="tile-header px-0 pt-0 pb-1">Max Drawdown</div>
+        <div class="stat-value text-xl font-bold tabular-nums loss-text">-$584</div>
+        <div class="text-[10px] dark:text-label-tertiary text-gray-400 mt-1">Peak to trough</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Equity Curve + Heatmap + Distribution -->
+    <div class="grid grid-cols-12 gap-3 mb-4">
+
+      <!-- EQUITY CURVE — spans 7 cols -->
+      <div class="tile rounded-lg col-span-7 scanlines overflow-hidden">
+        <div class="tile-header flex items-center justify-between">
+          <span>Cumulative P&L</span>
+          <span class="text-[9px] dark:text-teal text-teal-dim tabular-nums">LIVE</span>
+        </div>
+        <div class="px-4 pb-4">
+          <svg viewBox="0 0 700 220" class="w-full" preserveAspectRatio="xMidYMid meet">
+            <!-- Grid lines -->
+            <line x1="0" y1="55" x2="700" y2="55" stroke="currentColor" class="dark:text-canvas-700 text-surface-200" stroke-width="0.5" stroke-dasharray="4,4"/>
+            <line x1="0" y1="110" x2="700" y2="110" stroke="currentColor" class="dark:text-canvas-700 text-surface-200" stroke-width="0.5" stroke-dasharray="4,4"/>
+            <line x1="0" y1="165" x2="700" y2="165" stroke="currentColor" class="dark:text-canvas-700 text-surface-200" stroke-width="0.5" stroke-dasharray="4,4"/>
+
+            <!-- Y-axis labels -->
+            <text x="4" y="52" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">+$3,000</text>
+            <text x="4" y="107" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">+$1,500</text>
+            <text x="4" y="162" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">$0</text>
+
+            <!-- Gradient fill under curve -->
+            <defs>
+              <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#2DD4BF" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="eqGradLight" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0D9488" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Area fill — real cumulative P&L from CSV data -->
+            <path d="M10,125 L30,107 L50,103 L60,102 L65,101 L80,120 L90,119
+                     L110,121 L120,140 L130,139 L140,138 L155,137
+                     L175,132 L185,131 L195,130 L210,149
+                     L225,146 L240,97 L260,96
+                     L280,117 L295,115 L310,116 L320,136
+                     L340,100 L355,99 L365,118
+                     L385,117 L395,96 L410,95
+                     L430,76 L440,80 L450,79 L455,78 L465,77
+                     L485,96 L500,95 L510,74
+                     L530,73 L545,71 L560,91
+                     L575,108 L585,115 L590,107 L600,106
+                     L615,86 L630,105 L645,103 L655,102
+                     L665,84 L680,66 L695,48
+                     L695,200 L10,200 Z"
+                  class="dark:fill-[url(#eqGrad)] fill-[url(#eqGradLight)]"/>
+
+            <!-- Line -->
+            <path d="M10,125 L30,107 L50,103 L60,102 L65,101 L80,120 L90,119
+                     L110,121 L120,140 L130,139 L140,138 L155,137
+                     L175,132 L185,131 L195,130 L210,149
+                     L225,146 L240,97 L260,96
+                     L280,117 L295,115 L310,116 L320,136
+                     L340,100 L355,99 L365,118
+                     L385,117 L395,96 L410,95
+                     L430,76 L440,80 L450,79 L455,78 L465,77
+                     L485,96 L500,95 L510,74
+                     L530,73 L545,71 L560,91
+                     L575,108 L585,115 L590,107 L600,106
+                     L615,86 L630,105 L645,103 L655,102
+                     L665,84 L680,66 L695,48"
+                  fill="none" stroke="#2DD4BF" stroke-width="1.5" stroke-linejoin="round" class="equity-path"/>
+
+            <!-- End dot -->
+            <circle cx="695" cy="48" r="3" fill="#2DD4BF" class="animate-pulse"/>
+
+            <!-- X-axis month labels -->
+            <text x="40" y="215" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">Nov</text>
+            <text x="200" y="215" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">Dec</text>
+            <text x="390" y="215" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">Jan</text>
+            <text x="560" y="215" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">Feb</text>
+            <text x="670" y="215" fill="currentColor" class="dark:text-label-tertiary text-gray-400" font-size="9" font-family="IBM Plex Mono">Mar</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TIME-OF-DAY HEATMAP — 3 cols -->
+      <div class="tile rounded-lg col-span-3">
+        <div class="tile-header">P&L by Time of Day</div>
+        <div class="px-4 pb-4">
+          <div class="grid grid-cols-6 gap-[3px] mb-2">
+            <!-- Time labels -->
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">9:30</div>
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">10:00</div>
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">10:30</div>
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">11:00</div>
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">11:30</div>
+            <div class="text-[8px] dark:text-label-tertiary text-gray-400 text-center tabular-nums">12:00+</div>
+          </div>
+
+          <!-- Row: Mon -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] dark:text-label-tertiary text-gray-400 w-6 text-right shrink-0">Mon</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell bg-gain" style="opacity:0.8" title="+$400"></div>
+              <div class="heat-cell bg-loss" style="opacity:0.5" title="-$100"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.3" title="+$4"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.7" title="+$400"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.5" title="$0"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.6" title="+$400"></div>
+            </div>
+          </div>
+          <!-- Row: Tue -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] dark:text-label-tertiary text-gray-400 w-6 text-right shrink-0">Tue</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell bg-gain" style="opacity:0.8" title="+$400"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell bg-loss" style="opacity:0.5" title="-$200"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Wed -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] dark:text-label-tertiary text-gray-400 w-6 text-right shrink-0">Wed</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell bg-loss" style="opacity:0.5" title="-$198"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.4" title="+$6"></div>
+              <div class="heat-cell bg-loss" style="opacity:0.5" title="-$192"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.7" title="+$400"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Thu -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] dark:text-label-tertiary text-gray-400 w-6 text-right shrink-0">Thu</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell bg-loss" style="opacity:0.7" title="-$199"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.5" title="+$400"></div>
+              <div class="heat-cell bg-loss" style="opacity:0.4" title="-$199"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+            </div>
+          </div>
+          <!-- Row: Fri -->
+          <div class="flex items-center gap-1 mb-[3px]">
+            <span class="text-[8px] dark:text-label-tertiary text-gray-400 w-6 text-right shrink-0">Fri</span>
+            <div class="grid grid-cols-6 gap-[3px] flex-1">
+              <div class="heat-cell bg-loss" style="opacity:0.5" title="-$199"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.3" title="+$0.50"></div>
+              <div class="heat-cell bg-gain" style="opacity:0.7" title="+$400"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+              <div class="heat-cell dark:bg-canvas-700 bg-surface-200" style="opacity:0.3" title="$0"></div>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex items-center justify-between mt-3 px-1">
+            <span class="text-[8px] loss-text">-$400</span>
+            <div class="flex items-center gap-[2px]">
+              <div class="w-3 h-2 rounded-sm bg-loss" style="opacity:0.8"></div>
+              <div class="w-3 h-2 rounded-sm bg-loss" style="opacity:0.4"></div>
+              <div class="w-3 h-2 rounded-sm dark:bg-canvas-700 bg-surface-200"></div>
+              <div class="w-3 h-2 rounded-sm bg-gain" style="opacity:0.4"></div>
+              <div class="w-3 h-2 rounded-sm bg-gain" style="opacity:0.8"></div>
+            </div>
+            <span class="text-[8px] gain-text">+$400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P&L DISTRIBUTION — 2 cols -->
+      <div class="tile rounded-lg col-span-2">
+        <div class="tile-header">P&L Distribution</div>
+        <div class="px-3 pb-3">
+          <!-- Vertical histogram -->
+          <div class="flex items-end gap-[3px] h-[140px] mt-2">
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:18%; opacity:0.9"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">-400</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:55%; opacity:0.8"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">-200</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-loss" style="height:22%; opacity:0.6"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">-100</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full dark:bg-canvas-500 bg-surface-300" style="height:40%"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">0</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-gain" style="height:30%; opacity:0.6"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">+50</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="bar w-full bg-gain" style="height:70%; opacity:0.8"></div>
+              <span class="text-[7px] dark:text-label-tertiary text-gray-400 mt-1 tabular-nums">+400</span>
+            </div>
+          </div>
+          <!-- Stats below distribution -->
+          <div class="mt-3 pt-2 border-t dark:border-canvas-700 border-surface-200">
+            <div class="flex justify-between text-[9px]">
+              <span class="dark:text-label-tertiary text-gray-400">Median</span>
+              <span class="tabular-nums gain-text">+$2.00</span>
+            </div>
+            <div class="flex justify-between text-[9px] mt-1">
+              <span class="dark:text-label-tertiary text-gray-400">Std Dev</span>
+              <span class="tabular-nums dark:text-label-secondary text-gray-500">$245.80</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Session Log + Monthly + Behavioral -->
+    <div class="grid grid-cols-12 gap-3">
+
+      <!-- SESSION LOG — 7 cols -->
+      <div class="tile rounded-lg col-span-7 overflow-hidden">
+        <div class="tile-header flex items-center justify-between">
+          <span>Session Log</span>
+          <span class="text-[9px] dark:text-label-tertiary text-gray-400 tabular-nums">85 trades across 55 sessions</span>
+        </div>
+        <div class="overflow-y-auto max-h-[340px]">
+          <table class="w-full text-[11px]">
+            <thead>
+              <tr class="dark:text-label-tertiary text-gray-400 text-[9px] uppercase tracking-wider">
+                <th class="text-left font-medium px-4 py-2">Date</th>
+                <th class="text-left font-medium px-2 py-2">Contract</th>
+                <th class="text-center font-medium px-2 py-2">Trades</th>
+                <th class="text-center font-medium px-2 py-2">W/L</th>
+                <th class="text-right font-medium px-2 py-2">Duration</th>
+                <th class="text-right font-medium px-4 py-2">P&L</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Real session data from CSV -->
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/12</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">24m 50s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/11</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">13m 0s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/10</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span>/<span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">2m 27s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$200.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/09</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">2m 0s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/06</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">10m 26s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$2.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/05</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span> <span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">2</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span>/<span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">11m 37s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$198.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/03</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span>/<span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">31m 33s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$100.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">03/02</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">25m 5s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$1.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">02/27</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span> <span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">2</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span>/<span class="loss-text">2</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">27m 23s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$199.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">02/26</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-teal-subtle dark:text-teal bg-teal-50 text-teal-700">MNQ</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">13m 42s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">02/25</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">0</span>/<span class="loss-text">1</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">28m 59s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium loss-text">-$98.00</td>
+              </tr>
+              <tr class="session-row border-t dark:border-canvas-750 border-surface-100">
+                <td class="px-4 py-2 tabular-nums">02/24</td>
+                <td class="px-2 py-2"><span class="pill dark:bg-canvas-600 dark:text-label-secondary bg-gray-100 text-gray-600">MYM</span></td>
+                <td class="px-2 py-2 text-center tabular-nums">1</td>
+                <td class="px-2 py-2 text-center"><span class="gain-text">1</span>/<span class="loss-text">0</span></td>
+                <td class="px-2 py-2 text-right tabular-nums dark:text-label-secondary text-gray-500">22m 3s</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium gain-text">+$400.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN — 5 cols, stacked panels -->
+      <div class="col-span-5 flex flex-col gap-3">
+
+        <!-- MONTHLY P&L BAR CHART -->
+        <div class="tile rounded-lg">
+          <div class="tile-header">Monthly P&L</div>
+          <div class="px-4 pb-4">
+            <div class="flex items-end gap-3 h-[100px]">
+              <!-- Nov -->
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:55%"></div>
+                </div>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400 mt-1">Nov</span>
+                <span class="text-[9px] gain-text tabular-nums">+$672</span>
+              </div>
+              <!-- Dec -->
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:40%"></div>
+                </div>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400 mt-1">Dec</span>
+                <span class="text-[9px] gain-text tabular-nums">+$419</span>
+              </div>
+              <!-- Jan -->
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:50%"></div>
+                </div>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400 mt-1">Jan</span>
+                <span class="text-[9px] gain-text tabular-nums">+$509</span>
+              </div>
+              <!-- Feb -->
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:45%"></div>
+                </div>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400 mt-1">Feb</span>
+                <span class="text-[9px] gain-text tabular-nums">+$408</span>
+              </div>
+              <!-- Mar (partial) -->
+              <div class="flex-1 flex flex-col items-center">
+                <div class="w-full flex flex-col items-center justify-end h-[80px]">
+                  <div class="bar w-full bg-gain" style="height:50%"></div>
+                </div>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400 mt-1">Mar*</span>
+                <span class="text-[9px] gain-text tabular-nums">+$505</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BEHAVIORAL SIGNALS -->
+        <div class="tile rounded-lg">
+          <div class="tile-header">Behavioral Signals</div>
+          <div class="px-4 pb-4 space-y-3">
+            <!-- Revenge Trades -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-loss animate-pulse"></div>
+                <span class="text-[11px] dark:text-label-primary text-gray-700">Revenge Trades</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium tabular-nums loss-text">3 detected</span>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400">/ 85 total</span>
+              </div>
+            </div>
+            <!-- Overtrading Days -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                <span class="text-[11px] dark:text-label-primary text-gray-700">Overtrading Days</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium tabular-nums text-amber-400">2 flagged</span>
+                <span class="text-[9px] dark:text-label-tertiary text-gray-400">avg 1.5/day</span>
+              </div>
+            </div>
+            <!-- Max Consecutive Losses -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full dark:bg-label-tertiary bg-gray-300"></div>
+                <span class="text-[11px] dark:text-label-primary text-gray-700">Max Consec. Losses</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums dark:text-label-secondary text-gray-500">4</span>
+            </div>
+            <!-- Max Consecutive Wins -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-gain"></div>
+                <span class="text-[11px] dark:text-label-primary text-gray-700">Max Consec. Wins</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums gain-text">5</span>
+            </div>
+            <!-- Avg Duration -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-teal"></div>
+                <span class="text-[11px] dark:text-label-primary text-gray-700">Avg Trade Duration</span>
+              </div>
+              <span class="text-[11px] font-medium tabular-nums dark:text-teal text-teal-dim">16m 42s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTRACT BREAKDOWN -->
+        <div class="tile rounded-lg">
+          <div class="tile-header">Contract Performance</div>
+          <div class="px-4 pb-4">
+            <div class="space-y-3">
+              <!-- MNQ -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-medium dark:text-teal text-teal-dim">MNQ</span>
+                  <span class="text-[11px] tabular-nums gain-text font-medium">+$2,218.50</span>
+                </div>
+                <div class="flex gap-[2px] h-2 rounded-full overflow-hidden">
+                  <div class="bg-gain rounded-l-full" style="width:55%"></div>
+                  <div class="bg-loss rounded-r-full" style="width:32%"></div>
+                  <div class="dark:bg-canvas-600 bg-surface-300" style="width:13%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-[8px] dark:text-label-tertiary text-gray-400">44 trades | 52% win rate</span>
+                  <span class="text-[8px] dark:text-label-tertiary text-gray-400">PF 1.72</span>
+                </div>
+              </div>
+              <!-- MYM -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-medium dark:text-label-secondary text-gray-600">MYM</span>
+                  <span class="text-[11px] tabular-nums gain-text font-medium">+$354.00</span>
+                </div>
+                <div class="flex gap-[2px] h-2 rounded-full overflow-hidden">
+                  <div class="bg-gain rounded-l-full" style="width:38%"></div>
+                  <div class="bg-loss rounded-r-full" style="width:50%"></div>
+                  <div class="dark:bg-canvas-600 bg-surface-300" style="width:12%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-[8px] dark:text-label-tertiary text-gray-400">41 trades | 41% win rate</span>
+                  <span class="text-[8px] dark:text-label-tertiary text-gray-400">PF 1.11</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-4 pt-3 border-t dark:border-canvas-750 border-surface-200 flex items-center justify-between px-1">
+      <span class="text-[9px] dark:text-label-tertiary text-gray-400">TradeLog v3 — Data Canvas</span>
+      <div class="flex items-center gap-4">
+        <span class="text-[9px] dark:text-label-tertiary text-gray-400 tabular-nums">85 trades loaded</span>
+        <span class="text-[9px] dark:text-label-tertiary text-gray-400">Topstep X</span>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
