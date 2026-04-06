@@ -66,6 +66,8 @@ export default function CalendarPage() {
           setYear(latest.getFullYear())
           setMonth(latest.getMonth())
         }
+      } catch (err) {
+        console.error('Calendar fetch failed:', err)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -108,9 +110,10 @@ export default function CalendarPage() {
 
   return (
     <div
-      className="w-full"
+      className="w-full px-3 sm:px-6"
       style={{
-        padding: '12px 24px 16px',
+        paddingTop: '12px',
+        paddingBottom: '16px',
         minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -121,14 +124,14 @@ export default function CalendarPage() {
         month={month}
         onNavigate={handleNavigate}
       />
+      <div style={{ marginBottom: 10, flexShrink: 0 }}>
+        <MonthSummary sessions={monthSessions} />
+      </div>
       <MonthGrid
         year={year}
         month={month}
         sessionsByDay={sessionsByDay}
       />
-      <div style={{ marginTop: 10, flexShrink: 0 }}>
-        <MonthSummary sessions={monthSessions} />
-      </div>
     </div>
   )
 }

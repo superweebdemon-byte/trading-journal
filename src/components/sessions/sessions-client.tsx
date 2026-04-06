@@ -196,7 +196,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
                     {group.label}
                   </span>
                   <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-                    &middot; {group.sessions.length} sessions &middot;{' '}
+                    &middot; {group.sessions.length} days &middot;{' '}
                     {group.sessions.reduce((sum, s) => sum + s.trade_count, 0)} trades
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
             className="text-[11px] cursor-pointer hover:opacity-80 transition-opacity"
             style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-tertiary)', background: 'none', border: 'none' }}
           >
-            Load more sessions ({remaining} remaining)
+            Load more ({remaining} remaining)
           </button>
         </div>
       )}
@@ -244,7 +244,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
       {filteredSessions.length === 0 && (
         <div className="text-center py-8">
           <p className="text-[12px]" style={{ color: 'var(--color-text-tertiary)' }}>
-            No sessions match the current filters.
+            No trades match the current filters.
           </p>
         </div>
       )}

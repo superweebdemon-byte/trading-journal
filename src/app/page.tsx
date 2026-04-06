@@ -95,14 +95,14 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-3 overflow-hidden">
+    <div className="w-full flex flex-col gap-3 px-2 sm:px-0">
       {/* Row 1: KPI Ribbon — fixed height, never shrinks */}
       <div className="flex-shrink-0">
         <KpiRibbon corePnl={kpis.corePnl} risk={kpis.risk} dateRange={dateRange} />
       </div>
 
       {/* Row 2: Equity Curve + Behavioral Signals + Performance Edge — takes ~60% of remaining space */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0" style={{ flex: '6 1 0%' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:min-h-[400px]" style={{ flex: '6 1 auto' }}>
         <EquityCurve
           trades={trades}
           pnlMode={pnlMode}
@@ -117,8 +117,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Row 3: Time+Day Panel + Monthly P&L — takes ~40% of remaining space */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0" style={{ flex: '4 1 0%' }}>
-        <div className="col-span-1 lg:col-span-6 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:min-h-[320px]" style={{ flex: '4 1 auto' }}>
+        <div className="col-span-1 lg:col-span-6">
           <TimeDayPanel
             timeBuckets={kpis.timeBased.timeBuckets}
             bestBucket={kpis.timeBased.bestBucket}
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
             bestDay={kpis.timeBased.bestDay}
           />
         </div>
-        <div className="col-span-1 lg:col-span-6 overflow-hidden">
+        <div className="col-span-1 lg:col-span-6">
           <MonthlyPnl
             monthlyTrend={kpis.timeBased.monthlyTrend}
             monthlyPnlMap={kpis.corePnl.monthlyPnl}

@@ -24,7 +24,7 @@ function SessionsContent() {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-          Loading sessions...
+          Loading trades...
         </p>
       </div>
     )
@@ -34,7 +34,7 @@ function SessionsContent() {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <p className="text-sm" style={{ color: 'var(--color-loss)' }}>
-          Failed to load sessions: {error}
+          Failed to load trades: {error}
         </p>
       </div>
     )
@@ -44,7 +44,7 @@ function SessionsContent() {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-          No sessions yet. Import trades to get started.
+          No trades yet. Import to get started.
         </p>
       </div>
     )
@@ -57,7 +57,7 @@ export default function SessionsPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-full min-h-[60vh]">
-        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Loading sessions...</p>
+        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Loading trades...</p>
       </div>
     }>
       <SessionsContent />

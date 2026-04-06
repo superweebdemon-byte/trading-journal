@@ -163,9 +163,9 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             style={{
               fontSize: '10px',
               color: 'var(--color-text-tertiary)',
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'Fira Code', monospace",
               fontWeight: 500,
-              letterSpacing: '0.05em',
+              letterSpacing: '0.14em',
               textTransform: 'uppercase',
               marginBottom: '6px',
             }}
@@ -298,9 +298,9 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             style={{
               fontSize: '10px',
               color: 'var(--color-text-tertiary)',
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'Fira Code', monospace",
               fontWeight: 500,
-              letterSpacing: '0.05em',
+              letterSpacing: '0.14em',
               textTransform: 'uppercase',
               marginBottom: '6px',
             }}
@@ -397,9 +397,9 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
               style={{
                 fontSize: '10px',
                 color: 'var(--color-text-tertiary)',
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'Fira Code', monospace",
                 fontWeight: 500,
-                letterSpacing: '0.05em',
+                letterSpacing: '0.14em',
                 textTransform: 'uppercase',
               }}
             >

@@ -49,11 +49,11 @@ export function WeeklySummaryCell({
 
   if (hasTrades) {
     if (isGreen) {
-      bg = 'rgba(52,211,153,0.05)'
-      borderLeft = '2px solid rgba(52,211,153,0.3)'
+      bg = 'rgba(16, 185, 129, 0.20)'
+      borderLeft = '2px solid rgba(16, 185, 129, 0.4)'
     } else if (isRed) {
-      bg = 'rgba(239,68,68,0.05)'
-      borderLeft = '2px solid rgba(239,68,68,0.25)'
+      bg = 'rgba(153, 27, 27, 0.35)'
+      borderLeft = '2px solid rgba(153, 27, 27, 0.5)'
     }
   }
 
@@ -69,12 +69,12 @@ export function WeeklySummaryCell({
         border: '1px solid var(--color-border)',
         borderLeftWidth: 2,
         borderLeftColor: hasTrades && isGreen
-          ? 'rgba(52,211,153,0.3)'
+          ? 'rgba(16, 185, 129, 0.4)'
           : hasTrades && isRed
-            ? 'rgba(239,68,68,0.25)'
+            ? 'rgba(153, 27, 27, 0.5)'
             : 'transparent',
         padding: '8px 10px',
-        opacity: isOverflowWeek ? 0.55 : 1,
+        opacity: isCurrentMonth ? 1 : 0.45,
       }}
     >
       {/* Day number top-left */}
@@ -106,7 +106,7 @@ export function WeeklySummaryCell({
         <div className="flex flex-col items-center justify-center h-full text-center" style={{ marginTop: 8 }}>
           <span
             className="font-mono tabular-nums font-semibold"
-            style={{ fontSize: 16, color: pnlColor }}
+            style={{ fontSize: 13, color: pnlColor }}
           >
             {formatPnl(totalPnl)}
           </span>

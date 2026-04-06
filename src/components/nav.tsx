@@ -13,7 +13,7 @@ interface NavProps {
 const tabs = [
   { label: 'Dashboard', href: '/' },
   { label: 'Calendar', href: '/calendar' },
-  { label: 'Sessions', href: '/sessions' },
+  { label: 'Trades', href: '/sessions' },
   { label: 'Settings', href: '/settings' },
 ] as const
 

@@ -49,31 +49,42 @@ function buildCalendarWeeks(year: number, month: number): CalendarWeek[] {
     allDays.push({ day: d, isCurrentMonth: true, dateKey: toDateKey(year, month, d) })
   }
 
-  // Fill trailing days from next month (to complete last week through Saturday)
+  // Fill trailing days from next month to always reach exactly 42 days (6 weeks)
   const nextMonth = month === 11 ? 0 : month + 1
   const nextYear = month === 11 ? year + 1 : year
   let nextDay = 1
-  while (allDays.length % 7 !== 0) {
+  while (allDays.length < 42) {
     allDays.push({ day: nextDay, isCurrentMonth: false, dateKey: toDateKey(nextYear, nextMonth, nextDay) })
     nextDay++
   }
 
-  // Split into weeks of 7
-  const allWeeks: CalendarWeek[] = []
-  for (let i = 0; i < allDays.length; i += 7) {
+  // Split into exactly 6 weeks of 7 days
+  const weeks: CalendarWeek[] = []
+  for (let i = 0; i < 42; i += 7) {
     const weekDays = allDays.slice(i, i + 7)
-    allWeeks.push({
+    weeks.push({
       days: weekDays,
-      weekNumber: 0, // placeholder, assigned below
+      weekNumber: 0,
     })
   }
 
-  // Remove trailing weeks where ALL days are outside the current month
-  const weeks = allWeeks.filter(w => w.days.some(d => d.isCurrentMonth))
+  // Assign week numbers (Topstep X style)
+  // A week belongs to the current month only if it has NO next-month days.
+  // Once a week contains any next-month day, the counter resets to Week 1.
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate()
+  const lastDateKey = toDateKey(year, month, lastDayOfMonth)
 
-  // Assign week numbers sequentially: Week 1 through Week N
+  let currentMonthWeek = 0
+  let nextMonthWeek = 0
   for (let i = 0; i < weeks.length; i++) {
-    weeks[i].weekNumber = i + 1
+    const hasNextMonthDay = weeks[i].days.some(d => !d.isCurrentMonth && d.dateKey > lastDateKey)
+    if (!hasNextMonthDay) {
+      currentMonthWeek++
+      weeks[i].weekNumber = currentMonthWeek
+    } else {
+      nextMonthWeek++
+      weeks[i].weekNumber = nextMonthWeek
+    }
   }
 
   return weeks
@@ -102,25 +113,21 @@ function aggregateWeek(
 
 export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
   const weeks = buildCalendarWeeks(year, month)
-  const weekCount = weeks.length
 
   // Today's date key for highlighting
   const now = new Date()
   const todayKey = toDateKey(now.getFullYear(), now.getMonth(), now.getDate())
 
-  // Weeks beyond row 4 are overflow (reduced opacity)
-
   return (
     <div
-      className=""
       style={{
         background: 'var(--color-border-subtle)',
         border: '1px solid var(--color-border)',
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr) 140px',
-        gridTemplateRows: `auto repeat(${weekCount}, 1fr)`,
+        gridTemplateRows: 'auto repeat(6, 1fr)',
+        minHeight: '510px',
         flex: 1,
-        minHeight: `${weekCount * 80 + 30}px`,
       }}
     >
       {/* Day headers */}
@@ -144,8 +151,6 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
       {/* Week rows */}
       {weeks.map((week, wi) => {
         const { totalPnl, tradeCount, hasTrades } = aggregateWeek(week.days, sessionsByDay)
-        const isOverflowWeek = wi >= 4
-
         return week.days.map((cell, di) => {
           // Saturday column (index 6) = weekly summary
           if (di === 6) {
@@ -158,7 +163,7 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
                 tradeCount={tradeCount}
                 hasTrades={hasTrades}
                 isCurrentMonth={cell.isCurrentMonth}
-                isOverflowWeek={isOverflowWeek}
+                isOverflowWeek={false}
               />
             )
           }

@@ -50,7 +50,7 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
       {/* Net P&L — hero tile */}
       <div
-        className="px-3 py-2 rounded-[6px]"
+        className="px-3 py-2 rounded-[10px]"
         style={{
           background: 'var(--color-bg-tertiary)',
           border: '1px solid rgba(0,212,170,0.20)',
@@ -138,7 +138,7 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
         >
           {totalTrades}
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           Best: {largestWin !== null ? formatDollars(largestWin) : '—'} | Worst: {largestLoss !== null ? formatDollars(largestLoss) : '—'}
         </div>
       </Tile>
@@ -178,7 +178,7 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
 function Tile({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div
-      className="px-3 py-2 rounded-[6px]"
+      className="px-3 py-2 rounded-[10px]"
       style={{
         background: 'var(--color-bg-tertiary)',
         border: '1px solid var(--color-border)',

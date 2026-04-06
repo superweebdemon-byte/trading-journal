@@ -81,7 +81,7 @@ export function ImportSummary({ newCount, dupCount, trades }: ImportSummaryProps
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Sessions</span>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Days</span>
             <span
               className="tabular-nums font-bold"
               style={{

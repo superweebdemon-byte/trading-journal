@@ -177,7 +177,7 @@ export function DataManagement() {
               Clear All Data
             </div>
             <div className="text-[10px] mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              Permanently delete all trades, sessions, and import history. This cannot be undone.
+              Permanently delete all trades and import history. This cannot be undone.
             </div>
           </div>
           <button

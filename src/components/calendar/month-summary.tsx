@@ -23,7 +23,7 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
       style={{
         background: 'var(--color-bg-tertiary)',
         border: '1px solid var(--color-border)',
-        padding: '14px 18px',
+        padding: '10px 14px',
       }}
     >
       <div
@@ -46,7 +46,7 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
 export function MonthSummary({ sessions }: MonthSummaryProps) {
   if (sessions.length === 0) {
     return (
-      <div className="grid grid-cols-6 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
         {['Month P&L', 'Trades', 'Win Rate', 'Best Day', 'Worst Day', 'Avg P&L/Day'].map((label) => (
           <Tile key={label} label={label}>
             <div
@@ -80,7 +80,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
   const avgColor = avgPnlPerDay >= 0 ? 'var(--color-gain)' : 'var(--color-loss)'
 
   return (
-    <div className="grid grid-cols-6 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
       {/* Month P&L */}
       <Tile label="Month P&L">
         <div
@@ -103,7 +103,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
           {totalTrades}
         </div>
         <div className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
-          across {sessions.length} session{sessions.length !== 1 ? 's' : ''}
+          across {sessions.length} day{sessions.length !== 1 ? 's' : ''}
         </div>
       </Tile>
 

@@ -18,12 +18,12 @@ export function TimeDayPanel({ timeBuckets, bestBucket, dayOfWeek, bestDay }: Ti
         border: '1px solid var(--color-border)',
       }}
     >
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-auto">
         <PnlTime timeBuckets={timeBuckets} bestBucket={bestBucket} />
       </div>
       {/* Subtle divider */}
       <div className="flex-shrink-0 mx-4 my-1" style={{ borderTop: '1px solid var(--color-border)' }} />
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-auto">
         <PnlDay dayOfWeek={dayOfWeek} bestDay={bestDay} />
       </div>
     </div>

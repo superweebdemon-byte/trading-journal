@@ -66,7 +66,7 @@ export function MonthSummary({ months, selectedMonth, onSelect }: MonthSummaryPr
                   {m.tradeCount} trades
                 </div>
                 <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {m.sessionCount} sessions
+                  {m.sessionCount} days
                 </div>
               </div>
             </div>

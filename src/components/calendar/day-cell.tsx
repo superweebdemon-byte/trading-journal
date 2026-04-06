@@ -23,22 +23,21 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
   const todayBorder = isToday ? '1px solid var(--color-accent)' : '1px solid var(--color-border)'
   const todayDayColor = isToday ? 'var(--color-accent)' : 'var(--color-text-tertiary)'
 
-  // Outside current month — dimmed uniformly
+  // Outside current month — visually receded
   if (!isCurrentMonth) {
     if (!session) {
       return (
         <div
           className="calendar-cell relative"
           style={{
-            background: 'var(--color-bg-tertiary)',
+            background: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-border)',
             padding: '8px 10px',
-            opacity: 0.45,
           }}
         >
           <span
             className="absolute"
-            style={{ top: 6, left: 8, fontSize: 12, color: 'var(--color-text-tertiary)' }}
+            style={{ top: 6, left: 8, fontSize: 12, color: 'var(--color-text-quaternary)', opacity: 0.5 }}
           >
             {day}
           </span>
@@ -46,11 +45,11 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
       )
     }
 
-    // Outside month but has trades — same cell styling as current month, just dimmed
+    // Outside month but has trades — heavily desaturated fills, faded text
     const pnl = session.net_pnl
     const isGreen = pnl > 0
     const isRed = pnl < 0
-    const bg = isGreen ? 'var(--color-gain-bg)' : isRed ? 'var(--color-loss-bg)' : 'var(--color-bg-tertiary)'
+    const bg = isGreen ? 'rgba(16, 185, 129, 0.12)' : isRed ? 'rgba(153, 27, 27, 0.18)' : 'var(--color-bg-secondary)'
     const pnlColor = isRed ? 'var(--color-loss)' : 'var(--color-gain)'
     const tradeLabel = `${session.trade_count} ${session.trade_count === 1 ? 'trade' : 'trades'}`
 
@@ -61,26 +60,25 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
           background: bg,
           border: '1px solid var(--color-border)',
           padding: '8px 10px',
-          opacity: 0.45,
         }}
         onPointerDown={() => router.push(`/sessions?date=${session.trade_day}`)}
       >
         <span
           className="absolute"
-          style={{ top: 6, left: 8, fontSize: 12, color: 'var(--color-text-tertiary)' }}
+          style={{ top: 6, left: 8, fontSize: 12, color: 'var(--color-text-quaternary)' }}
         >
           {day}
         </span>
         <div className="flex flex-col items-center justify-center h-full text-center">
           <span
             className="font-mono tabular-nums font-semibold"
-            style={{ fontSize: 16, color: pnlColor }}
+            style={{ fontSize: 14, color: pnlColor, opacity: 0.55 }}
           >
             {formatPnl(pnl)}
           </span>
           <span
             className="font-mono tabular-nums"
-            style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 2 }}
+            style={{ fontSize: 9, color: 'var(--color-text-tertiary)', marginTop: 2, opacity: 0.4 }}
           >
             {tradeLabel}
           </span>
@@ -114,7 +112,7 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
   const pnl = session.net_pnl
   const isGreen = pnl > 0
   const isRed = pnl < 0
-  const bg = isGreen ? 'var(--color-gain-bg)' : isRed ? 'var(--color-loss-bg)' : 'var(--color-bg-tertiary)'
+  const bg = isGreen ? 'rgba(16, 185, 129, 0.30)' : isRed ? 'rgba(153, 27, 27, 0.45)' : 'var(--color-bg-tertiary)'
   const pnlColor = isRed ? 'var(--color-loss)' : 'var(--color-gain)'
   const tradeLabel = `${session.trade_count} ${session.trade_count === 1 ? 'trade' : 'trades'}`
 
@@ -137,13 +135,13 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
       <div className="flex flex-col items-center justify-center h-full text-center">
         <span
           className="font-mono tabular-nums font-semibold"
-          style={{ fontSize: 16, color: pnlColor }}
+          style={{ fontSize: 14, color: pnlColor }}
         >
           {formatPnl(pnl)}
         </span>
         <span
           className="font-mono tabular-nums"
-          style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 2 }}
+          style={{ fontSize: 9, color: 'var(--color-text-tertiary)', marginTop: 2 }}
         >
           {tradeLabel}
         </span>

@@ -403,10 +403,11 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars: _maxDrawdownD
 
   return (
     <div
-      className="col-span-1 lg:col-span-8 h-full overflow-hidden flex flex-col rounded-[10px] self-stretch"
+      className="col-span-1 lg:col-span-8 lg:h-full overflow-hidden flex flex-col rounded-[10px] self-stretch"
       style={{
-        background: 'var(--color-bg-primary)',
+        background: 'var(--color-bg-tertiary)',
         border: '1px solid rgba(255,255,255,0.06)',
+        minHeight: '280px',
       }}
     >
       {/* Robinhood-style header */}
@@ -505,7 +506,7 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars: _maxDrawdownD
       </div>
 
       {/* Chart area */}
-      <div className="flex-1 min-h-0 relative" style={{ padding: '4px 12px 10px 12px' }}>
+      <div className="flex-1 relative" style={{ padding: '4px 12px 10px 12px', minHeight: '180px' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {/* Max drawdown overlay */}
         <div
