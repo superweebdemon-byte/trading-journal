@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import type { Trade } from '@/lib/types'
 import { getTradePnl } from '@/lib/kpi'
+import { useTheme } from '@/themes/provider'
+import type { ThemeColors } from '@/themes/types'
 
 interface EquityCurveProps {
   trades: Trade[]
@@ -88,16 +90,16 @@ function findMaxDrawdown(data: CurveDataPoint[]) {
   return { peakIndex: ddPeakIdx, troughIndex: troughIdx, drawdown: maxDD }
 }
 
-function getPeriodColor(data: CurveDataPoint[]) {
-  if (data.length < 2) return { up: true, lineColor: '#10B981', fillTop: 'rgba(16,185,129,0.20)', fillBottom: 'rgba(16,185,129,0.02)' }
+function getPeriodColor(data: CurveDataPoint[], colors: ThemeColors) {
+  if (data.length < 2) return { up: true, lineColor: colors.gain, fillTop: colors.gainBg, fillBottom: 'transparent' }
   const startVal = data[0].value
   const endVal = data[data.length - 1].value
   const up = endVal >= startVal
   return {
     up,
-    lineColor: up ? '#10B981' : '#EF4444',
-    fillTop: up ? 'rgba(16,185,129,0.20)' : 'rgba(239,68,68,0.20)',
-    fillBottom: up ? 'rgba(16,185,129,0.02)' : 'rgba(239,68,68,0.02)',
+    lineColor: up ? colors.gain : colors.loss,
+    fillTop: up ? colors.gainBg : colors.lossBg,
+    fillBottom: 'transparent',
   }
 }
 
@@ -126,7 +128,9 @@ function formatDate(timeStr: string): string {
 // Component
 // ────────────────────────────────────────────────────────
 
-export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurveProps) {
+export function EquityCurve({ trades, pnlMode, maxDrawdownDollars: _maxDrawdownDollars }: EquityCurveProps) {
+  const { theme } = useTheme()
+  const themeColors = theme.colors
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<ReturnType<typeof import('lightweight-charts').createChart> | null>(null)
   const seriesRef = useRef<unknown>(null)
@@ -209,14 +213,14 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
       }
 
       const container = chartContainerRef.current
-      const colors = getPeriodColor(visibleData)
+      const colors = getPeriodColor(visibleData, themeColors)
 
       const chart = createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
         layout: {
           background: { color: 'transparent' },
-          textColor: '#4A5568',
+          textColor: themeColors.textTertiary,
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: 10,
           attributionLogo: false,
@@ -267,7 +271,7 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 4,
         crosshairMarkerBorderColor: colors.lineColor,
-        crosshairMarkerBackgroundColor: '#141820',
+        crosshairMarkerBackgroundColor: themeColors.bgPrimary,
         crosshairMarkerBorderWidth: 2,
       })
 
@@ -377,7 +381,7 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
         chartRef.current = null
       }
     }
-  }, [visibleData, visibleDD, animateBalance])
+  }, [visibleData, visibleDD, animateBalance, themeColors])
 
   // Set header default when visible data changes
   useEffect(() => {
@@ -392,16 +396,16 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
   }, [])
 
   const changeColorMap = {
-    gain: '#10B981',
-    loss: '#EF4444',
-    drawdown: '#EF4444',
+    gain: themeColors.gain,
+    loss: themeColors.loss,
+    drawdown: themeColors.loss,
   }
 
   return (
     <div
       className="col-span-1 lg:col-span-8 h-full overflow-hidden flex flex-col rounded-[10px] self-stretch"
       style={{
-        background: '#141820',
+        background: 'var(--color-bg-primary)',
         border: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -414,7 +418,7 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
                 fontFamily: "'Sora', sans-serif",
                 fontSize: '28px',
                 fontWeight: 700,
-                color: '#E8ECF2',
+                color: 'var(--color-text-primary)',
                 transition: 'color 0.15s ease',
               }}
             >
@@ -425,7 +429,7 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: '11px',
                 fontWeight: 500,
-                color: '#4A5568',
+                color: 'var(--color-text-tertiary)',
                 opacity: hoverDate ? 1 : 0,
                 transition: 'opacity 0.15s ease',
               }}
@@ -478,19 +482,19 @@ export function EquityCurve({ trades, pnlMode, maxDrawdownDollars }: EquityCurve
                 borderRadius: '4px',
                 border: 'none',
                 background: timeRange === range ? 'rgba(45,212,191,0.12)' : 'transparent',
-                color: timeRange === range ? '#E8ECF2' : '#4A5568',
+                color: timeRange === range ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
                 transition: 'all 0.15s ease',
                 outline: 'none',
                 WebkitTapHighlightColor: 'transparent',
               }}
               onMouseEnter={(e) => {
                 if (timeRange !== range) {
-                  (e.target as HTMLButtonElement).style.color = '#8B95A8'
+                  (e.target as HTMLButtonElement).style.color = 'var(--color-text-secondary)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (timeRange !== range) {
-                  (e.target as HTMLButtonElement).style.color = '#4A5568'
+                  (e.target as HTMLButtonElement).style.color = 'var(--color-text-tertiary)'
                 }
               }}
             >

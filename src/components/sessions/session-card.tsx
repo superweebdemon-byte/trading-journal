@@ -53,7 +53,7 @@ function ContractBadge({ symbol }: { symbol: string }) {
       className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm uppercase"
       style={{
         background: isMNQ ? 'rgba(0,212,170,0.15)' : 'rgba(48,54,61,0.15)',
-        color: isMNQ ? '#00D4AA' : '#8B949E',
+        color: isMNQ ? 'var(--color-accent)' : 'var(--color-text-secondary)',
         letterSpacing: '0.06em',
       }}
     >
@@ -69,13 +69,13 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
   const outcome = getOutcomeLabel(session)
   const winRate = Math.round(session.win_rate * 100)
 
-  const borderClass = isLoss ? 'loss' : isGain && session.net_pnl > 0 ? 'win' : 'flat-day'
+  const _borderClass = isLoss ? 'loss' : isGain && session.net_pnl > 0 ? 'win' : 'flat-day'
 
   return (
     <div
       className="rounded-md transition-all cursor-pointer"
       style={{
-        background: '#161B22',
+        background: 'var(--color-bg-tertiary)',
         border: '1px solid rgba(48,54,61,0.12)',
         borderLeft: `3px solid ${isLoss ? 'rgba(239,68,68,0.50)' : session.net_pnl > 0 ? 'rgba(52,211,153,0.50)' : 'rgba(48,54,61,0.30)'}`,
         borderRadius: '6px',
@@ -93,16 +93,16 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
         <div className="flex items-center gap-4">
           <div
             className="font-semibold text-[12px]"
-            style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: '#E6EDF3' }}
+            style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-primary)' }}
           >
             {full}{' '}
-            <span className="text-[10px] font-normal" style={{ color: '#6E7681' }}>
+            <span className="text-[10px] font-normal" style={{ color: 'var(--color-text-tertiary)' }}>
               {dayName}
             </span>
           </div>
           <span
             className="font-bold tabular-nums text-[13px]"
-            style={{ color: isGain ? '#34D399' : '#EF4444' }}
+            style={{ color: isGain ? 'var(--color-gain)' : 'var(--color-loss)' }}
           >
             {formatPnl(session.net_pnl)}
           </span>
@@ -111,7 +111,7 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
             style={{
               letterSpacing: '0.06em',
               background: outcome === 'WIN' ? 'rgba(52,211,153,0.10)' : outcome === 'LOSS' ? 'rgba(239,68,68,0.10)' : 'rgba(48,54,61,0.10)',
-              color: outcome === 'WIN' ? '#34D399' : outcome === 'LOSS' ? '#EF4444' : '#6E7681',
+              color: outcome === 'WIN' ? 'var(--color-gain)' : outcome === 'LOSS' ? 'var(--color-loss)' : 'var(--color-text-tertiary)',
             }}
           >
             {outcome}
@@ -121,24 +121,24 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
         {/* Right side: stats + chevron */}
         <div className="flex items-center gap-6 text-[11px]">
           <div className="text-center">
-            <div className="text-[10px] uppercase tracking-wider" style={{ color: '#6E7681' }}>Trades</div>
-            <div className="font-bold tabular-nums" style={{ color: '#E6EDF3' }}>{session.trade_count}</div>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Trades</div>
+            <div className="font-bold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{session.trade_count}</div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] uppercase tracking-wider" style={{ color: '#6E7681' }}>Win Rate</div>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Win Rate</div>
             <div
               className="font-bold tabular-nums"
-              style={{ color: winRate >= 50 ? '#34D399' : '#EF4444' }}
+              style={{ color: winRate >= 50 ? 'var(--color-gain)' : 'var(--color-loss)' }}
             >
               {winRate === 0 && session.breakeven_count === session.trade_count ? '0' : winRate}%
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] uppercase tracking-wider" style={{ color: '#6E7681' }}>Duration</div>
-            <div className="tabular-nums" style={{ color: '#8B949E' }}>{formatSessionDuration(session)}</div>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Duration</div>
+            <div className="tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>{formatSessionDuration(session)}</div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] uppercase tracking-wider" style={{ color: '#6E7681' }}>Contracts</div>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Contracts</div>
             <div className="flex items-center gap-1">
               {session.contracts.map((c) => (
                 <ContractBadge key={c} symbol={c} />

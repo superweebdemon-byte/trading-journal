@@ -52,11 +52,11 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <div
         className="px-3 py-2 rounded-[6px]"
         style={{
-          background: '#161B22',
+          background: 'var(--color-bg-tertiary)',
           border: '1px solid rgba(0,212,170,0.20)',
         }}
       >
-        <div className="pb-0.5" style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6E7681' }}>
+        <div className="pb-0.5" style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
           Net P&L
         </div>
         <div
@@ -64,12 +64,12 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: '1.25rem',
-            color: totalPnl >= 0 ? '#34D399' : '#EF4444',
+            color: totalPnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)',
           }}
         >
           {formatDollars(totalPnl)}
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           {dateRange}
         </div>
       </div>
@@ -78,12 +78,12 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <Tile label="Win Rate">
         <div
           className="font-bold tabular-nums leading-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: '#E6EDF3' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: 'var(--color-text-primary)' }}
         >
           {winRate !== null ? winRate.toFixed(1) : '—'}
-          <span style={{ fontSize: '0.75rem', color: '#6E7681' }}>%</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>%</span>
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           {wins}W / {losses}L
         </div>
       </Tile>
@@ -92,16 +92,16 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <Tile label="Profit Factor">
         <div
           className="font-bold tabular-nums leading-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: '#E6EDF3' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: 'var(--color-text-primary)' }}
         >
           {profitFactor !== null && profitFactor !== Infinity
             ? profitFactor.toFixed(2)
             : profitFactor === Infinity
               ? '∞'
               : '—'}
-          <span style={{ fontSize: '0.75rem', color: '#6E7681' }}>x</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>x</span>
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           ${Math.round(grossWins).toLocaleString()} / ${Math.round(grossLosses).toLocaleString()}
         </div>
       </Tile>
@@ -111,19 +111,19 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
         <div className="flex items-baseline gap-1 leading-tight">
           <span
             className="font-bold tabular-nums"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.125rem', color: '#34D399' }}
+            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.125rem', color: 'var(--color-gain)' }}
           >
             ${avgWin !== null ? Math.round(avgWin).toLocaleString() : '—'}
           </span>
-          <span style={{ fontSize: '0.75rem', color: '#6E7681' }}>/</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>/</span>
           <span
             className="font-bold tabular-nums"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.125rem', color: '#EF4444' }}
+            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.125rem', color: 'var(--color-loss)' }}
           >
             ${avgLoss !== null ? Math.round(avgLoss).toLocaleString() : '—'}
           </span>
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           {risk.riskRewardRatio !== null && risk.riskRewardRatio !== Infinity
             ? `${risk.riskRewardRatio.toFixed(2)}:1 R:R`
             : '—'}
@@ -134,11 +134,11 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <Tile label="Total Trades">
         <div
           className="font-bold tabular-nums leading-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: '#E6EDF3' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: 'var(--color-text-primary)' }}
         >
           {totalTrades}
         </div>
-        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5 tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           Best: {largestWin !== null ? formatDollars(largestWin) : '—'} | Worst: {largestLoss !== null ? formatDollars(largestLoss) : '—'}
         </div>
       </Tile>
@@ -147,11 +147,11 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <Tile label="Max Drawdown">
         <div
           className="font-bold tabular-nums leading-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: '#EF4444' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: 'var(--color-loss)' }}
         >
           {risk.maxDrawdownDollars > 0 ? `-$${Math.round(risk.maxDrawdownDollars).toLocaleString()}` : '$0'}
         </div>
-        <div className="mt-0.5" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           {risk.maxDrawdownPercent !== null
             ? `${risk.maxDrawdownPercent.toFixed(1)}% from peak`
             : 'peak-to-trough'}
@@ -162,12 +162,12 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
       <Tile label="Avg Duration">
         <div
           className="font-bold tabular-nums leading-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: '#E6EDF3' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', color: 'var(--color-text-primary)' }}
         >
           {formatDuration(avgDurationSeconds)}
-          <span style={{ fontSize: '0.75rem', color: '#6E7681' }}>{durationSuffix(avgDurationSeconds)}</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>{durationSuffix(avgDurationSeconds)}</span>
         </div>
-        <div className="mt-0.5" style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div className="mt-0.5" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           per trade
         </div>
       </Tile>
@@ -180,11 +180,11 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
     <div
       className="px-3 py-2 rounded-[6px]"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
       }}
     >
-      <div className="pb-0.5" style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6E7681' }}>
+      <div className="pb-0.5" style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
         {label}
       </div>
       {children}

@@ -21,8 +21,8 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
     <div
       className="rounded-lg"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
         padding: '14px 18px',
       }}
     >
@@ -32,7 +32,7 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
           fontFamily: "'Space Grotesk', sans-serif",
           fontSize: 10,
           letterSpacing: '0.08em',
-          color: '#6E7681',
+          color: 'var(--color-text-tertiary)',
           marginBottom: 4,
         }}
       >
@@ -51,7 +51,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
           <Tile key={label} label={label}>
             <div
               className="font-semibold tabular-nums font-mono"
-              style={{ fontSize: 18, color: '#6E7681' }}
+              style={{ fontSize: 18, color: 'var(--color-text-tertiary)' }}
             >
               —
             </div>
@@ -76,8 +76,8 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
 
   const avgPnlPerDay = totalPnl / sessions.length
 
-  const pnlColor = totalPnl >= 0 ? '#34D399' : '#EF4444'
-  const avgColor = avgPnlPerDay >= 0 ? '#34D399' : '#EF4444'
+  const pnlColor = totalPnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)'
+  const avgColor = avgPnlPerDay >= 0 ? 'var(--color-gain)' : 'var(--color-loss)'
 
   return (
     <div className="grid grid-cols-6 gap-2.5">
@@ -89,7 +89,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
         >
           {formatDollars(totalPnl)}
         </div>
-        <div className="tabular-nums" style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           {sessions.length} trading day{sessions.length !== 1 ? 's' : ''}
         </div>
       </Tile>
@@ -98,11 +98,11 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
       <Tile label="Trades">
         <div
           className="font-semibold tabular-nums font-mono"
-          style={{ fontSize: 18, color: '#E6EDF3' }}
+          style={{ fontSize: 18, color: 'var(--color-text-primary)' }}
         >
           {totalTrades}
         </div>
-        <div className="tabular-nums" style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           across {sessions.length} session{sessions.length !== 1 ? 's' : ''}
         </div>
       </Tile>
@@ -111,12 +111,12 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
       <Tile label="Win Rate">
         <div
           className="font-semibold tabular-nums font-mono"
-          style={{ fontSize: 18, color: '#E6EDF3' }}
+          style={{ fontSize: 18, color: 'var(--color-text-primary)' }}
         >
           {Math.round(winRate)}
-          <span style={{ fontSize: 13, color: '#6E7681' }}>%</span>
+          <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>%</span>
         </div>
-        <div className="tabular-nums" style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           {totalWins}W / {totalLosses}L
         </div>
       </Tile>
@@ -125,11 +125,11 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
       <Tile label="Best Day">
         <div
           className="font-semibold tabular-nums font-mono"
-          style={{ fontSize: 18, color: bestDay.net_pnl >= 0 ? '#34D399' : '#EF4444' }}
+          style={{ fontSize: 18, color: bestDay.net_pnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)' }}
         >
           {formatDollars(bestDay.net_pnl)}
         </div>
-        <div style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           {formatDate(bestDay.trade_day)}
         </div>
       </Tile>
@@ -138,11 +138,11 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
       <Tile label="Worst Day">
         <div
           className="font-semibold tabular-nums font-mono"
-          style={{ fontSize: 18, color: worstDay.net_pnl >= 0 ? '#34D399' : '#EF4444' }}
+          style={{ fontSize: 18, color: worstDay.net_pnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)' }}
         >
           {formatDollars(worstDay.net_pnl)}
         </div>
-        <div style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           {formatDate(worstDay.trade_day)}
         </div>
       </Tile>
@@ -155,7 +155,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
         >
           {formatDollars(avgPnlPerDay)}
         </div>
-        <div style={{ fontSize: 11, color: '#6E7681', marginTop: 3 }}>
+        <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
           per trading day
         </div>
       </Tile>

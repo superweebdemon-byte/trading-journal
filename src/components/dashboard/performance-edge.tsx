@@ -11,24 +11,24 @@ function formatDollar(value: number): string {
 }
 
 function getRecoveryColor(rating: PerformanceEdgeKpis['recoveryRating']): string {
-  if (rating === 'EXCELLENT') return '#34D399'
-  if (rating === 'GOOD') return '#34D399'
-  if (rating === 'MODERATE') return '#FFD600'
-  return '#EF4444'
+  if (rating === 'EXCELLENT') return 'var(--color-gain)'
+  if (rating === 'GOOD') return 'var(--color-gain)'
+  if (rating === 'MODERATE') return '#FFD600' /* TODO: unmapped color — yellow/warning */
+  return 'var(--color-loss)'
 }
 
 function getRecoveryBg(rating: PerformanceEdgeKpis['recoveryRating']): string {
-  if (rating === 'EXCELLENT') return 'rgba(52,211,153,0.10)'
-  if (rating === 'GOOD') return 'rgba(52,211,153,0.10)'
-  if (rating === 'MODERATE') return 'rgba(255,214,0,0.10)'
-  return 'rgba(239,68,68,0.10)'
+  if (rating === 'EXCELLENT') return 'var(--color-gain-bg)'
+  if (rating === 'GOOD') return 'var(--color-gain-bg)'
+  if (rating === 'MODERATE') return 'rgba(255,214,0,0.10)' /* TODO: unmapped color — yellow/warning bg */
+  return 'var(--color-loss-bg)'
 }
 
 function getRecoveryBorder(rating: PerformanceEdgeKpis['recoveryRating']): string {
-  if (rating === 'EXCELLENT') return 'rgba(52,211,153,0.15)'
-  if (rating === 'GOOD') return 'rgba(52,211,153,0.15)'
-  if (rating === 'MODERATE') return 'rgba(255,214,0,0.15)'
-  return 'rgba(239,68,68,0.15)'
+  if (rating === 'EXCELLENT') return 'rgba(52,211,153,0.15)' /* TODO: needs opacity variant */
+  if (rating === 'GOOD') return 'rgba(52,211,153,0.15)' /* TODO: needs opacity variant */
+  if (rating === 'MODERATE') return 'rgba(255,214,0,0.15)' /* TODO: unmapped color — yellow/warning border */
+  return 'rgba(239,68,68,0.15)' /* TODO: needs opacity variant */
 }
 
 export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
@@ -53,7 +53,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
   const shortStats = directionSplit.find(d => d.direction === 'Short')
 
   // Expectancy color
-  const expectancyColor = expectancy !== null && expectancy >= 0 ? '#34D399' : '#EF4444'
+  const expectancyColor = expectancy !== null && expectancy >= 0 ? 'var(--color-gain)' : 'var(--color-loss)'
 
   // Formula breakdown text
   const winRatePct = winRateDecimal !== null ? Math.round(winRateDecimal * 100) : 0
@@ -65,8 +65,8 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
     <div
       className="flex flex-col flex-shrink-0 rounded-[6px]"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
         overflow: 'visible',
       }}
     >
@@ -79,7 +79,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
           fontWeight: 500,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: '#6E7681',
+          color: 'var(--color-text-tertiary)',
         }}
       >
         Performance Edge
@@ -99,7 +99,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <span
               style={{
                 fontSize: '10px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 500,
                 letterSpacing: '0.05em',
@@ -111,7 +111,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <span
               style={{
                 fontSize: '9px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 letterSpacing: '0.04em',
               }}
@@ -136,7 +136,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <span
               style={{
                 fontSize: '10px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
@@ -148,7 +148,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
               style={{
                 fontSize: '9px',
                 fontFamily: "'Space Grotesk', sans-serif",
-                color: '#8B949E',
+                color: 'var(--color-text-secondary)',
                 opacity: 0.7,
               }}
             >
@@ -162,7 +162,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
           <div
             style={{
               fontSize: '10px',
-              color: '#6E7681',
+              color: 'var(--color-text-tertiary)',
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 500,
               letterSpacing: '0.05em',
@@ -185,7 +185,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
                     fontSize: '10px',
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontWeight: 600,
-                    color: '#34D399',
+                    color: 'var(--color-gain)',
                     letterSpacing: '0.06em',
                   }}
                 >
@@ -193,23 +193,23 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="tabular-nums" style={{ fontSize: '11px', color: '#E6EDF3', fontWeight: 500 }}>
+                <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500 }}>
                   {Math.round(longStats.winRate)}%
                 </span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
                 <span
                   className="tabular-nums"
                   style={{
                     fontSize: '11px',
                     fontWeight: 500,
-                    color: longStats.avgPnl >= 0 ? '#34D399' : '#EF4444',
+                    color: longStats.avgPnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)',
                   }}
                 >
                   {formatDollar(longStats.avgPnl)}
                 </span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>avg</span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
-                <span className="tabular-nums" style={{ fontSize: '11px', color: '#8B949E' }}>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>avg</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
+                <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
                   {longStats.tradeCount}
                 </span>
               </div>
@@ -228,7 +228,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
                     fontSize: '10px',
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontWeight: 600,
-                    color: '#EF4444',
+                    color: 'var(--color-loss)',
                     letterSpacing: '0.06em',
                   }}
                 >
@@ -236,23 +236,23 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="tabular-nums" style={{ fontSize: '11px', color: '#E6EDF3', fontWeight: 500 }}>
+                <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500 }}>
                   {Math.round(shortStats.winRate)}%
                 </span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
                 <span
                   className="tabular-nums"
                   style={{
                     fontSize: '11px',
                     fontWeight: 500,
-                    color: shortStats.avgPnl >= 0 ? '#34D399' : '#EF4444',
+                    color: shortStats.avgPnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)',
                   }}
                 >
                   {formatDollar(shortStats.avgPnl)}
                 </span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>avg</span>
-                <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
-                <span className="tabular-nums" style={{ fontSize: '11px', color: '#8B949E' }}>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>avg</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
+                <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
                   {shortStats.tradeCount}
                 </span>
               </div>
@@ -264,13 +264,13 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <div className="flex items-center gap-1.5 mt-1.5">
               <div
                 className="flex-1 overflow-hidden rounded-full"
-                style={{ height: '4px', background: 'rgba(92,92,122,0.08)' }}
+                style={{ height: '4px', background: 'rgba(92,92,122,0.08)' /* TODO: needs opacity variant of --color-border */ }}
               >
                 <div
                   className="h-full rounded-full"
                   style={{
                     width: `${longPercent.toFixed(1)}%`,
-                    background: 'linear-gradient(90deg, #34D399 0%, #00D4AA 100%)',
+                    background: 'linear-gradient(90deg, var(--color-gain) 0%, var(--color-accent) 100%)',
                     opacity: 0.8,
                   }}
                 />
@@ -278,7 +278,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
               <span
                 style={{
                   fontSize: '9px',
-                  color: '#00D4AA',
+                  color: 'var(--color-accent)',
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontWeight: 500,
                 }}
@@ -290,14 +290,14 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: '1px solid rgba(92,92,122,0.15)' }} />
+        <div style={{ borderTop: '1px solid var(--color-border)' }} />
 
         {/* 3. BREAKEVEN RATE */}
         <div>
           <div
             style={{
               fontSize: '10px',
-              color: '#6E7681',
+              color: 'var(--color-text-tertiary)',
               fontFamily: "'Space Grotesk', sans-serif",
               fontWeight: 500,
               letterSpacing: '0.05em',
@@ -313,21 +313,21 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <div
               style={{
                 width: `${winPercent}%`,
-                background: '#34D399',
+                background: 'var(--color-gain)',
                 opacity: 0.8,
               }}
             />
             <div
               style={{
                 width: `${lossPercent}%`,
-                background: '#EF4444',
+                background: 'var(--color-loss)',
                 opacity: 0.8,
               }}
             />
             <div
               style={{
                 width: `${breakevenPercent}%`,
-                background: '#6E7681',
+                background: 'var(--color-text-tertiary)',
                 opacity: 0.6,
               }}
             />
@@ -336,25 +336,25 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
           {/* Labels below bar */}
           <div className="flex items-center justify-between mt-1">
             <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#34D399' }} />
-              <span className="tabular-nums" style={{ fontSize: '11px', color: '#34D399', fontWeight: 500 }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-gain)' }} />
+              <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-gain)', fontWeight: 500 }}>
                 {winPercent.toFixed(winPercent % 1 === 0 ? 0 : 1)}%
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>W</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>W</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#EF4444' }} />
-              <span className="tabular-nums" style={{ fontSize: '11px', color: '#EF4444', fontWeight: 500 }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-loss)' }} />
+              <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-loss)', fontWeight: 500 }}>
                 {lossPercent.toFixed(lossPercent % 1 === 0 ? 0 : 1)}%
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>L</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>L</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#6E7681' }} />
-              <span className="tabular-nums" style={{ fontSize: '11px', color: '#8B949E', fontWeight: 500 }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-text-tertiary)' }} />
+              <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
                 {breakevenPercent.toFixed(breakevenPercent % 1 === 0 ? 0 : 1)}%
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>BE</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>BE</span>
             </div>
           </div>
         </div>
@@ -365,11 +365,11 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
               <path d="M8 1C6.5 4 5 6.5 5 9a3 3 0 006 0c0-2.5-1.5-5-3-8z" fill="#34D399" opacity="0.85"/>
             </svg>
-            <span style={{ fontSize: '10px', color: '#E6EDF3', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
               Best win streak
             </span>
           </div>
-          <span className="tabular-nums" style={{ fontSize: '11px', fontWeight: 700, color: '#34D399' }}>
+          <span className="tabular-nums" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-gain)' }}>
             {edge.maxConsecutiveWins}
           </span>
         </div>
@@ -378,17 +378,17 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
               <polyline points="2,4 6,8 10,5 14,12" stroke="#EF4444" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span style={{ fontSize: '10px', color: '#E6EDF3', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
               Worst loss streak
             </span>
           </div>
-          <span className="tabular-nums" style={{ fontSize: '11px', fontWeight: 700, color: '#EF4444' }}>
+          <span className="tabular-nums" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-loss)' }}>
             {edge.maxConsecutiveLosses}
           </span>
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: '1px solid rgba(92,92,122,0.15)' }} />
+        <div style={{ borderTop: '1px solid var(--color-border)' }} />
 
         {/* 4. RECOVERY FACTOR */}
         <div className="flex items-center justify-between">
@@ -396,7 +396,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <span
               style={{
                 fontSize: '10px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 500,
                 letterSpacing: '0.05em',
@@ -408,7 +408,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <span
               style={{
                 fontSize: '9px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 opacity: 0.6,
               }}

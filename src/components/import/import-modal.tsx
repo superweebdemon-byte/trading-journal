@@ -33,9 +33,11 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [parseErrors, setParseErrors] = useState<string[]>([])
   const [historyKey, setHistoryKey] = useState(0)
 
-  // Reset state when modal closes
+  // Reset state when modal closes — synchronous setState is intentional here
+  // to clear form state in response to the isOpen prop change
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep('upload')
       setFilename('')
       setTotalRows(0)
@@ -193,7 +195,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
         aria-labelledby="import-modal-heading"
         className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[700px] max-w-[90vw] max-h-[85vh] overflow-y-auto p-4"
         style={{
-          background: '#161B22',
+          background: 'var(--color-bg-tertiary)',
           border: '1px solid rgba(48,54,61,0.20)',
           borderRadius: '8px',
         }}
@@ -206,14 +208,14 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
               className="text-lg font-bold"
               style={{
                 fontFamily: 'var(--font-display), sans-serif',
-                color: '#E6EDF3',
+                color: 'var(--color-text-primary)',
               }}
             >
               Import Trades
             </h2>
             <p
               className="mt-0.5"
-              style={{ fontSize: '11px', color: '#6E7681' }}
+              style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}
             >
               Upload a CSV export from Topstep X.
             </p>
@@ -225,12 +227,12 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
             style={{
               fontSize: '20px',
               lineHeight: '1',
-              color: '#6E7681',
+              color: 'var(--color-text-tertiary)',
               background: 'none',
               border: 'none',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#E6EDF3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#6E7681' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
             aria-label="Close"
           >
             &times;
@@ -244,7 +246,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
             {parseErrors.length > 0 && (
               <div className="mt-2 space-y-1">
                 {parseErrors.map((err, i) => (
-                  <p key={i} style={{ fontSize: '11px', color: '#EF4444' }}>{err}</p>
+                  <p key={i} style={{ fontSize: '11px', color: 'var(--color-loss)' }}>{err}</p>
                 ))}
               </div>
             )}
@@ -275,7 +277,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                 style={{
                   background: 'rgba(22,27,34,0.8)',
                   border: '1px solid rgba(48,54,61,0.15)',
-                  color: '#8B949E',
+                  color: 'var(--color-text-secondary)',
                   padding: '6px 16px',
                   borderRadius: '4px',
                   fontSize: '11px',
@@ -283,11 +285,11 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                   fontFamily: 'var(--font-display), sans-serif',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#E6EDF3'
+                  e.currentTarget.style.color = 'var(--color-text-primary)'
                   e.currentTarget.style.borderColor = 'rgba(48,54,61,0.30)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#8B949E'
+                  e.currentTarget.style.color = 'var(--color-text-secondary)'
                   e.currentTarget.style.borderColor = 'rgba(48,54,61,0.15)'
                 }}
               >
@@ -298,9 +300,9 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                 disabled={step === 'importing' || newTrades.length === 0}
                 className="cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: '#00D4AA',
-                  border: '1px solid #00D4AA',
-                  color: '#0D1117',
+                  background: 'var(--color-accent)',
+                  border: '1px solid var(--color-accent)',
+                  color: 'var(--color-bg-secondary)',
                   padding: '6px 16px',
                   borderRadius: '4px',
                   fontSize: '11px',
@@ -308,12 +310,12 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                   fontFamily: 'var(--font-display), sans-serif',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#33DDBB'
-                  e.currentTarget.style.borderColor = '#33DDBB'
+                  e.currentTarget.style.background = 'var(--color-accent-bright)'
+                  e.currentTarget.style.borderColor = 'var(--color-accent-bright)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#00D4AA'
-                  e.currentTarget.style.borderColor = '#00D4AA'
+                  e.currentTarget.style.background = 'var(--color-accent)'
+                  e.currentTarget.style.borderColor = 'var(--color-accent)'
                 }}
               >
                 <span className="flex items-center gap-1.5">
@@ -329,7 +331,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
         {/* Success state */}
         {step === 'success' && (
-          <div className="flex items-center gap-2 mb-3 py-3" style={{ fontSize: '12px', color: '#34D399' }}>
+          <div className="flex items-center gap-2 mb-3 py-3" style={{ fontSize: '12px', color: 'var(--color-gain)' }}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -340,9 +342,9 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
         {/* Error state */}
         {step === 'error' && (
           <div className="mb-3 space-y-2">
-            <p style={{ fontSize: '12px', color: '#EF4444' }}>Import failed</p>
+            <p style={{ fontSize: '12px', color: 'var(--color-loss)' }}>Import failed</p>
             {parseErrors.map((err, i) => (
-              <p key={i} style={{ fontSize: '11px', color: '#EF4444' }}>{err}</p>
+              <p key={i} style={{ fontSize: '11px', color: 'var(--color-loss)' }}>{err}</p>
             ))}
             <button
               onPointerDown={handleCancel}
@@ -350,7 +352,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
               style={{
                 background: 'rgba(22,27,34,0.8)',
                 border: '1px solid rgba(48,54,61,0.15)',
-                color: '#8B949E',
+                color: 'var(--color-text-secondary)',
                 padding: '6px 16px',
                 borderRadius: '4px',
                 fontSize: '11px',

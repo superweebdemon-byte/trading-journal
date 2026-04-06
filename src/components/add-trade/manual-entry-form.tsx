@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { getContractSpec } from '@/lib/csv/contract-specs'
 import type { NormalizedTrade } from '@/lib/types'
 
@@ -103,7 +103,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 500,
   letterSpacing: '0.10em',
   textTransform: 'uppercase',
-  color: '#6E7681',
+  color: 'var(--color-text-tertiary)',
   marginBottom: '4px',
   display: 'block',
 }
@@ -115,7 +115,7 @@ const inputStyle: React.CSSProperties = {
   padding: '7px 10px',
   fontSize: '12px',
   fontFamily: 'var(--font-mono), monospace',
-  color: '#E6EDF3',
+  color: 'var(--color-text-primary)',
   width: '100%',
   outline: 'none',
   transition: 'border-color 0.15s',
@@ -155,23 +155,20 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
   const [form, setForm] = useState<FormState>(initialForm)
 
   const set = useCallback(<K extends keyof FormState>(key: K, val: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: val }))
+    setForm((prev) => {
+      const next = { ...prev, [key]: val }
+      // Auto-calc fees when size changes and feesAuto is on
+      if ((key === 'size' || key === 'feesAuto') && next.feesAuto) {
+        const size = parseNum(next.size) ?? 0
+        next.fees = (size * FEE_PER_CONTRACT).toFixed(2)
+      }
+      // Stopped out: auto-fill exit price from stop loss
+      if ((key === 'stoppedOut' || key === 'stopLoss') && next.stoppedOut && next.stopLoss) {
+        next.exitPrice = next.stopLoss
+      }
+      return next
+    })
   }, [])
-
-  // Auto-calc fees when size or feesAuto changes
-  useEffect(() => {
-    if (form.feesAuto) {
-      const size = parseNum(form.size) ?? 0
-      set('fees', (size * FEE_PER_CONTRACT).toFixed(2))
-    }
-  }, [form.size, form.feesAuto, set])
-
-  // Stopped out: auto-fill exit price from stop loss
-  useEffect(() => {
-    if (form.stoppedOut && form.stopLoss) {
-      set('exitPrice', form.stopLoss)
-    }
-  }, [form.stoppedOut, form.stopLoss, set])
 
   const spec = useMemo(() => getContractSpec(form.contract), [form.contract])
 
@@ -287,7 +284,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
     }
   }, [buildTrade, onSubmitAndContinue])
 
-  const contractDisplayName = spec?.displayName ?? form.contract
+  const _contractDisplayName = spec?.displayName ?? form.contract
 
   return (
     <div>
@@ -338,14 +335,14 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                   padding: '7px 16px',
                   borderRadius: '4px 0 0 4px',
                   border: form.direction === 'Long'
-                    ? '1px solid #00D4AA'
+                    ? '1px solid var(--color-accent)'
                     : '1px solid rgba(48,54,61,0.25)',
                   background: form.direction === 'Long'
-                    ? '#00D4AA'
+                    ? 'var(--color-accent)'
                     : 'rgba(13,17,23,0.6)',
                   color: form.direction === 'Long'
-                    ? '#0D1117'
-                    : '#6E7681',
+                    ? 'var(--color-bg-secondary)'
+                    : 'var(--color-text-tertiary)',
                 }}
               >
                 Long
@@ -361,17 +358,17 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                   padding: '7px 16px',
                   borderRadius: '0 4px 4px 0',
                   border: form.direction === 'Short'
-                    ? '1px solid #00D4AA'
+                    ? '1px solid var(--color-accent)'
                     : '1px solid rgba(48,54,61,0.25)',
                   borderLeft: form.direction === 'Short'
-                    ? '1px solid #00D4AA'
+                    ? '1px solid var(--color-accent)'
                     : 'none',
                   background: form.direction === 'Short'
-                    ? '#00D4AA'
+                    ? 'var(--color-accent)'
                     : 'rgba(13,17,23,0.6)',
                   color: form.direction === 'Short'
-                    ? '#0D1117'
-                    : '#6E7681',
+                    ? 'var(--color-bg-secondary)'
+                    : 'var(--color-text-tertiary)',
                 }}
               >
                 Short
@@ -406,7 +403,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
         <div className="flex justify-end" style={{ marginTop: '4px', marginBottom: '8px' }}>
           <label
             className="flex items-center gap-1.5 cursor-pointer"
-            style={{ fontSize: '11px', color: '#6E7681' }}
+            style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}
           >
             <span
               onPointerDown={() => set('stoppedOut', !form.stoppedOut)}
@@ -417,12 +414,12 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                 width: '14px',
                 height: '14px',
                 borderRadius: '2px',
-                background: form.stoppedOut ? '#00D4AA' : 'rgba(48,54,61,0.15)',
-                border: form.stoppedOut ? '1px solid #00D4AA' : '1px solid rgba(48,54,61,0.35)',
+                background: form.stoppedOut ? 'var(--color-accent)' : 'rgba(48,54,61,0.15)',
+                border: form.stoppedOut ? '1px solid var(--color-accent)' : '1px solid rgba(48,54,61,0.35)',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
                 fontSize: '10px',
-                color: '#0D1117',
+                color: 'var(--color-bg-secondary)',
                 fontWeight: 700,
               }}
             >
@@ -430,7 +427,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
             </span>
             Stopped out
           </label>
-          <span style={{ fontSize: '9px', color: '#484F58', marginLeft: '8px', alignSelf: 'center' }}>
+          <span style={{ fontSize: '9px', color: 'var(--color-text-tertiary)', marginLeft: '8px', alignSelf: 'center' }}>
             Auto-fills exit from stop loss
           </span>
         </div>
@@ -483,7 +480,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
               {form.feesAuto && (
                 <span
                   className="absolute right-2.5 top-1/2 -translate-y-1/2"
-                  style={{ fontSize: '9px', color: '#6E7681' }}
+                  style={{ fontSize: '9px', color: 'var(--color-text-tertiary)' }}
                 >
                   auto
                 </span>
@@ -493,7 +490,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           <div>
             <label style={labelStyle}>
               Stop Loss{' '}
-              <span style={{ color: '#6E7681', fontWeight: 400, letterSpacing: '0.04em', fontSize: '9px' }}>
+              <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400, letterSpacing: '0.04em', fontSize: '9px' }}>
                 (optional)
               </span>
             </label>
@@ -518,7 +515,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           <div className="flex items-center gap-1.5">
             <span
               className="uppercase tracking-wider font-medium"
-              style={{ fontSize: '10px', color: '#6E7681', letterSpacing: '0.10em' }}
+              style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', letterSpacing: '0.10em' }}
             >
               P&L
             </span>
@@ -529,8 +526,8 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                 fontSize: '14px',
                 fontWeight: 700,
                 color: calc.pnl !== null
-                  ? calc.pnl > 0 ? '#34D399' : calc.pnl < 0 ? '#EF4444' : '#E6EDF3'
-                  : '#484F58',
+                  ? calc.pnl > 0 ? 'var(--color-gain)' : calc.pnl < 0 ? 'var(--color-loss)' : 'var(--color-text-primary)'
+                  : 'var(--color-text-tertiary)',
               }}
             >
               {calc.pnl !== null
@@ -541,7 +538,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           <div className="flex items-center gap-1.5">
             <span
               className="uppercase tracking-wider font-medium"
-              style={{ fontSize: '10px', color: '#6E7681', letterSpacing: '0.10em' }}
+              style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', letterSpacing: '0.10em' }}
             >
               Duration
             </span>
@@ -551,7 +548,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: calc.durationStr ? '#E6EDF3' : '#484F58',
+                color: calc.durationStr ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
               }}
             >
               {calc.durationStr ?? '—'}
@@ -560,7 +557,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           <div className="flex items-center gap-1.5">
             <span
               className="uppercase tracking-wider font-medium"
-              style={{ fontSize: '10px', color: '#6E7681', letterSpacing: '0.10em' }}
+              style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', letterSpacing: '0.10em' }}
             >
               Risk
             </span>
@@ -570,7 +567,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: calc.risk !== null ? '#EF4444' : '#484F58',
+                color: calc.risk !== null ? 'var(--color-loss)' : 'var(--color-text-tertiary)',
               }}
             >
               {calc.risk !== null ? `$${calc.risk.toFixed(2)}` : '—'}
@@ -579,7 +576,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           <div className="flex items-center gap-1.5">
             <span
               className="uppercase tracking-wider font-medium"
-              style={{ fontSize: '10px', color: '#6E7681', letterSpacing: '0.10em' }}
+              style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', letterSpacing: '0.10em' }}
             >
               R:R
             </span>
@@ -589,7 +586,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '13px',
                 fontWeight: 700,
-                color: calc.rr !== null ? '#00D4AA' : '#484F58',
+                color: calc.rr !== null ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
               }}
             >
               {calc.rr !== null ? `${calc.rr.toFixed(1)}:1` : '—'}
@@ -608,7 +605,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           style={{
             background: 'rgba(22,27,34,0.8)',
             border: '1px solid rgba(48,54,61,0.15)',
-            color: '#8B949E',
+            color: 'var(--color-text-secondary)',
             padding: '6px 16px',
             borderRadius: '4px',
             fontSize: '11px',
@@ -616,11 +613,11 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
             fontFamily: 'var(--font-display), sans-serif',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = '#E6EDF3'
+            e.currentTarget.style.color = 'var(--color-text-primary)'
             e.currentTarget.style.borderColor = 'rgba(48,54,61,0.30)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = '#8B949E'
+            e.currentTarget.style.color = 'var(--color-text-secondary)'
             e.currentTarget.style.borderColor = 'rgba(48,54,61,0.15)'
           }}
         >
@@ -632,9 +629,9 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
           disabled={!isValid}
           className="cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            background: '#00D4AA',
-            border: '1px solid #00D4AA',
-            color: '#0D1117',
+            background: 'var(--color-accent)',
+            border: '1px solid var(--color-accent)',
+            color: 'var(--color-bg-secondary)',
             padding: '6px 16px',
             borderRadius: '4px',
             fontSize: '11px',
@@ -642,12 +639,12 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
             fontFamily: 'var(--font-display), sans-serif',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#33DDBB'
-            e.currentTarget.style.borderColor = '#33DDBB'
+            e.currentTarget.style.background = 'var(--color-accent-bright)'
+            e.currentTarget.style.borderColor = 'var(--color-accent-bright)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#00D4AA'
-            e.currentTarget.style.borderColor = '#00D4AA'
+            e.currentTarget.style.background = 'var(--color-accent)'
+            e.currentTarget.style.borderColor = 'var(--color-accent)'
           }}
         >
           Add Trade
@@ -656,7 +653,7 @@ export function ManualEntryForm({ onSubmit, onSubmitAndContinue }: ManualEntryFo
 
       {/* Footer text */}
       <div className="text-center mt-2">
-        <span style={{ fontSize: '10px', color: '#6E7681' }}>
+        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           {sessionDate
             ? `Trade will be added to ${sessionDate} session`
             : 'Enter entry time to determine session date'}

@@ -24,7 +24,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
             style={{
               fontFamily: 'var(--font-display), sans-serif',
               fontSize: '11px',
-              color: '#E6EDF3',
+              color: 'var(--color-text-primary)',
             }}
           >
             Preview
@@ -39,7 +39,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
               textTransform: 'uppercase',
               display: 'inline-block',
               background: 'rgba(52,211,153,0.10)',
-              color: '#34D399',
+              color: 'var(--color-gain)',
             }}
           >
             {filename}
@@ -47,7 +47,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
         </div>
         <span
           className="tabular-nums"
-          style={{ fontSize: '10px', color: '#6E7681' }}
+          style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}
         >
           {totalRows} rows detected
         </span>
@@ -61,19 +61,19 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
         <table className="w-full" style={{ fontSize: '10px' }}>
           <thead>
             <tr style={{ background: 'rgba(22,27,34,0.8)' }}>
-              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>Trade Id</th>
-              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>Account</th>
-              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>Contract</th>
-              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>Side</th>
-              <th className="text-right font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>P&amp;L</th>
-              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: '#6E7681', fontSize: '10px' }}>Trade Day</th>
+              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>Trade Id</th>
+              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>Account</th>
+              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>Contract</th>
+              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>Side</th>
+              <th className="text-right font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>P&amp;L</th>
+              <th className="text-left font-medium px-3 py-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)', fontSize: '10px' }}>Trade Day</th>
             </tr>
           </thead>
           <tbody>
             {previewTrades.map((trade) => {
               const pnl = parseFloat(trade.pnl)
-              const pnlColor = pnl > 0 ? '#34D399' : pnl < 0 ? '#EF4444' : '#6E7681'
-              const sideColor = trade.trade_type === 'Long' ? '#34D399' : '#8B949E'
+              const pnlColor = pnl > 0 ? 'var(--color-gain)' : pnl < 0 ? 'var(--color-loss)' : 'var(--color-text-tertiary)'
+              const sideColor = trade.trade_type === 'Long' ? 'var(--color-gain)' : 'var(--color-text-secondary)'
               const isMnq = trade.contract_symbol === 'MNQ'
 
               return (
@@ -82,10 +82,10 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
                   className="border-t"
                   style={{ borderColor: 'rgba(48,54,61,0.08)' }}
                 >
-                  <td className="px-3 py-1.5 tabular-nums" style={{ color: '#8B949E' }}>
+                  <td className="px-3 py-1.5 tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
                     TRD-{trade.topstep_id}
                   </td>
-                  <td className="px-3 py-1.5" style={{ color: '#6E7681' }}>
+                  <td className="px-3 py-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
                     {trade.raw_csv_row.ContractName ? `TSX-150K` : 'TSX-150K'}
                   </td>
                   <td className="px-3 py-1.5">
@@ -99,7 +99,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
                         textTransform: 'uppercase',
                         display: 'inline-block',
                         background: isMnq ? 'rgba(0,212,170,0.12)' : 'rgba(48,54,61,0.12)',
-                        color: isMnq ? '#00D4AA' : '#8B949E',
+                        color: isMnq ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                       }}
                     >
                       {trade.contract_symbol}
@@ -111,7 +111,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
                   <td className="px-3 py-1.5 text-right tabular-nums font-medium" style={{ color: pnlColor }}>
                     {pnl >= 0 ? '+' : ''}${Math.abs(pnl).toFixed(2)}
                   </td>
-                  <td className="px-3 py-1.5 tabular-nums" style={{ color: '#8B949E' }}>
+                  <td className="px-3 py-1.5 tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
                     {trade.trade_day}
                   </td>
                 </tr>
@@ -120,7 +120,7 @@ export function CsvPreview({ filename, totalRows, trades }: CsvPreviewProps) {
 
             {remaining > 0 && (
               <tr className="border-t" style={{ borderColor: 'rgba(48,54,61,0.08)' }}>
-                <td className="px-3 py-1.5 tabular-nums" colSpan={6} style={{ color: '#6E7681' }}>
+                <td className="px-3 py-1.5 tabular-nums" colSpan={6} style={{ color: 'var(--color-text-tertiary)' }}>
                   ... {remaining} more rows
                 </td>
               </tr>

@@ -49,8 +49,8 @@ export function TradeBreakdown({ trades, pnlMode }: TradeBreakdownProps) {
     <div
       className="flex flex-col flex-shrink-0 rounded-[6px]"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
         overflow: 'visible',
       }}
     >
@@ -63,7 +63,7 @@ export function TradeBreakdown({ trades, pnlMode }: TradeBreakdownProps) {
           fontWeight: 500,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: '#6E7681',
+          color: 'var(--color-text-tertiary)',
         }}
       >
         Trade Breakdown
@@ -77,29 +77,29 @@ export function TradeBreakdown({ trades, pnlMode }: TradeBreakdownProps) {
                 fontSize: '11px',
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 600,
-                color: '#E6EDF3',
+                color: 'var(--color-text-primary)',
               }}
             >
               {s.symbol} &times; {s.size}
             </span>
             <div className="flex items-center gap-2">
-              <span className="tabular-nums" style={{ fontSize: '11px', color: '#E6EDF3', fontWeight: 500 }}>
+              <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500 }}>
                 {Math.round(s.winRate)}%
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
               <span
                 className="tabular-nums"
                 style={{
                   fontSize: '11px',
                   fontWeight: 500,
-                  color: s.avgPnl >= 0 ? '#34D399' : '#EF4444',
+                  color: s.avgPnl >= 0 ? 'var(--color-gain)' : 'var(--color-loss)',
                 }}
               >
                 {formatDollar(s.avgPnl)}
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>avg</span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>|</span>
-              <span className="tabular-nums" style={{ fontSize: '11px', color: '#8B949E' }}>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>avg</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>|</span>
+              <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
                 {s.tradeCount}
               </span>
             </div>
