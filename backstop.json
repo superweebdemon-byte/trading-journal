@@ -1,0 +1,53 @@
+{
+  "id": "trading-journal",
+  "viewports": [
+    { "label": "desktop", "width": 1440, "height": 900 },
+    { "label": "tablet", "width": 768, "height": 900 },
+    { "label": "mobile", "width": 375, "height": 812 }
+  ],
+  "scenarios": [
+    {
+      "label": "Dashboard",
+      "url": "http://localhost:3000/",
+      "delay": 2000,
+      "misMatchThreshold": 0.1
+    },
+    {
+      "label": "Calendar",
+      "url": "http://localhost:3000/calendar",
+      "delay": 2000,
+      "misMatchThreshold": 0.1
+    },
+    {
+      "label": "Sessions",
+      "url": "http://localhost:3000/sessions",
+      "delay": 2000,
+      "misMatchThreshold": 0.1
+    },
+    {
+      "label": "Settings",
+      "url": "http://localhost:3000/settings",
+      "delay": 2000,
+      "misMatchThreshold": 0.1
+    },
+    {
+      "label": "Import",
+      "url": "http://localhost:3000/import",
+      "delay": 2000,
+      "misMatchThreshold": 0.1
+    }
+  ],
+  "paths": {
+    "bitmaps_reference": "backstop_data/bitmaps_reference",
+    "bitmaps_test": "backstop_data/bitmaps_test",
+    "engine_scripts": "backstop_data/engine_scripts",
+    "html_report": "backstop_data/html_report"
+  },
+  "engine": "puppeteer",
+  "engineOptions": {
+    "args": ["--no-sandbox"]
+  },
+  "report": ["browser"],
+  "debug": false,
+  "debugWindow": false
+}

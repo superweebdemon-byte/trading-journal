@@ -38,3 +38,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# backstopjs — keep reference bitmaps, ignore test output and reports
+backstop_data/bitmaps_test/
+backstop_data/html_report/
