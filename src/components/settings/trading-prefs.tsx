@@ -164,7 +164,7 @@ export function TradingPrefs({ settings, onUpdate }: TradingPrefsProps) {
               </span>
             </div>
             <div className="text-[10px] mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              Sessions with trades exceeding this multiple get flagged.
+              Days with trades exceeding this multiple get flagged.
             </div>
           </div>
         </div>

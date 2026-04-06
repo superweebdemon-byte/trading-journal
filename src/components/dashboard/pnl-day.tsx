@@ -46,7 +46,7 @@ export function PnlDay({ dayOfWeek, bestDay }: PnlDayProps) {
           </span>
         )}
       </div>
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-4">
         <div className="space-y-1.5">
           {rows.map(({ label, totalPnl }) => {
             const widthPercent = maxPnl > 0

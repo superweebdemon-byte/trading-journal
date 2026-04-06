@@ -53,7 +53,7 @@ export function KpiRibbon({ corePnl, risk, dateRange }: KpiRibbonProps) {
         className="px-3 py-2 rounded-[10px]"
         style={{
           background: 'var(--color-bg-tertiary)',
-          border: '1px solid rgba(0,212,170,0.20)',
+          border: '1px solid var(--color-border)',
         }}
       >
         <div className="pb-0.5" style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>

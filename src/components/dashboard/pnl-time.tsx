@@ -68,7 +68,7 @@ export function PnlTime({ timeBuckets, bestBucket }: PnlTimeProps) {
       </div>
       <div className="px-4 pb-3">
         <div className="space-y-1.5">
-          {groups.map(({ label, totalPnl }) => {
+          {groups.filter(g => g.totalPnl !== 0).map(({ label, totalPnl }) => {
             const widthPercent = maxPnl > 0
               ? Math.max(4, Math.round((Math.abs(totalPnl) / maxPnl) * 100))
               : 4
