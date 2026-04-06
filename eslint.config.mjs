@@ -13,6 +13,19 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            'JSXAttribute[name.name="style"] Property Literal[value=/^#[0-9a-fA-F]{3,8}$/]',
+          message:
+            "Use a theme token (var(--color-*)) instead of a hardcoded hex color. See src/themes/types.ts for available tokens.",
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;
