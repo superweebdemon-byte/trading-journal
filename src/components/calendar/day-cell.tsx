@@ -61,7 +61,7 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
           border: '1px solid var(--color-border)',
           padding: '8px 10px',
         }}
-        onPointerDown={() => router.push(`/sessions?date=${session.trade_day}`)}
+        onClick={() => router.push(`/sessions?date=${session.trade_day}`)}
       >
         <span
           className="absolute"
@@ -124,7 +124,7 @@ export function DayCell({ day, session, isCurrentMonth, isToday }: DayCellProps)
         border: todayBorder,
         padding: '8px 10px',
       }}
-      onPointerDown={() => router.push(`/sessions?date=${session.trade_day}`)}
+      onClick={() => router.push(`/sessions?date=${session.trade_day}`)}
     >
       <span
         className="absolute"

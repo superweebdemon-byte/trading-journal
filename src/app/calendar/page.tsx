@@ -110,7 +110,7 @@ export default function CalendarPage() {
 
   return (
     <div
-      className="w-full px-3 sm:px-6"
+      className="w-full px-3 sm:px-6 overflow-x-hidden"
       style={{
         paddingTop: '12px',
         paddingBottom: '16px',

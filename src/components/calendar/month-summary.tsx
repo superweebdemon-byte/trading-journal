@@ -19,7 +19,7 @@ function formatDate(dateStr: string): string {
 function Tile({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div
-      className="rounded-lg"
+      className="rounded-lg overflow-hidden min-w-0"
       style={{
         background: 'var(--color-bg-tertiary)',
         border: '1px solid var(--color-border)',
@@ -46,7 +46,7 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
 export function MonthSummary({ sessions }: MonthSummaryProps) {
   if (sessions.length === 0) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 overflow-hidden">
         {['Month P&L', 'Trades', 'Win Rate', 'Best Day', 'Worst Day', 'Avg P&L/Day'].map((label) => (
           <Tile key={label} label={label}>
             <div
@@ -80,7 +80,7 @@ export function MonthSummary({ sessions }: MonthSummaryProps) {
   const avgColor = avgPnlPerDay >= 0 ? 'var(--color-gain)' : 'var(--color-loss)'
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 overflow-hidden">
       {/* Month P&L */}
       <Tile label="Month P&L">
         <div
