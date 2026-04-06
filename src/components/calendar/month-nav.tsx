@@ -39,9 +39,9 @@ export function MonthNav({ year, month, onNavigate }: MonthNavProps) {
             width: 30,
             height: 30,
             borderRadius: 6,
-            border: '1px solid rgba(92,92,122,0.2)',
-            background: '#161B22',
-            color: '#6E7681',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-bg-tertiary)',
+            color: 'var(--color-text-tertiary)',
             fontSize: 14,
           }}
         >
@@ -52,7 +52,7 @@ export function MonthNav({ year, month, onNavigate }: MonthNavProps) {
           style={{
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: 20,
-            color: '#E6EDF3',
+            color: 'var(--color-text-primary)',
           }}
         >
           {label}
@@ -65,9 +65,9 @@ export function MonthNav({ year, month, onNavigate }: MonthNavProps) {
             width: 30,
             height: 30,
             borderRadius: 6,
-            border: '1px solid rgba(92,92,122,0.2)',
-            background: '#161B22',
-            color: '#6E7681',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-bg-tertiary)',
+            color: 'var(--color-text-tertiary)',
             fontSize: 14,
           }}
         >
@@ -81,9 +81,9 @@ export function MonthNav({ year, month, onNavigate }: MonthNavProps) {
         style={{
           padding: '4px 14px',
           borderRadius: 6,
-          border: '1px solid rgba(92,92,122,0.2)',
-          background: '#161B22',
-          color: '#6E7681',
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-bg-tertiary)',
+          color: 'var(--color-text-tertiary)',
           fontSize: 12,
           fontFamily: "'Space Grotesk', sans-serif",
         }}

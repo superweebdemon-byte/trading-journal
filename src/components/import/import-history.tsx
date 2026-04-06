@@ -50,7 +50,7 @@ export function ImportHistory({ refreshKey }: ImportHistoryProps) {
         style={{
           fontFamily: 'var(--font-display), sans-serif',
           fontSize: '10px',
-          color: '#8B949E',
+          color: 'var(--color-text-secondary)',
           letterSpacing: '0.14em',
         }}
       >
@@ -58,7 +58,7 @@ export function ImportHistory({ refreshKey }: ImportHistoryProps) {
       </div>
 
       {batches.length === 0 && !loading && (
-        <p style={{ fontSize: '10px', color: '#6E7681' }}>No imports yet.</p>
+        <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>No imports yet.</p>
       )}
 
       <div className="space-y-1">
@@ -71,7 +71,7 @@ export function ImportHistory({ refreshKey }: ImportHistoryProps) {
             style={{ borderColor: 'rgba(48,54,61,0.08)' }}
           >
             <div className="flex items-center gap-3">
-              <span className="tabular-nums" style={{ fontSize: '10px', color: '#8B949E' }}>
+              <span className="tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
                 {(() => {
                   try {
                     return batch.imported_at ? format(parseISO(batch.imported_at), 'MMM d, yyyy') : 'Unknown date'
@@ -80,12 +80,12 @@ export function ImportHistory({ refreshKey }: ImportHistoryProps) {
                   }
                 })()}
               </span>
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
                 {batch.filename}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="tabular-nums" style={{ fontSize: '10px', color: '#8B949E' }}>
+              <span className="tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
                 {batch.row_count} trades
               </span>
               <span
@@ -98,7 +98,7 @@ export function ImportHistory({ refreshKey }: ImportHistoryProps) {
                   textTransform: 'uppercase',
                   display: 'inline-block',
                   background: 'rgba(52,211,153,0.10)',
-                  color: '#34D399',
+                  color: 'var(--color-gain)',
                 }}
               >
                 SUCCESS

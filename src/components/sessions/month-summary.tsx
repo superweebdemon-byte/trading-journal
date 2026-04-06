@@ -46,7 +46,7 @@ export function MonthSummary({ months, selectedMonth, onSelect }: MonthSummaryPr
                   className="text-[10px] uppercase tracking-wider font-semibold"
                   style={{
                     fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)",
-                    color: isSelected ? (isGain ? '#6EE7B7' : '#F87171') : '#6E7681',
+                    color: isSelected ? (isGain ? 'var(--color-gain-bright)' : 'var(--color-loss)') : 'var(--color-text-tertiary)',
                   }}
                 >
                   {m.label}
@@ -55,17 +55,17 @@ export function MonthSummary({ months, selectedMonth, onSelect }: MonthSummaryPr
                   className="text-sm font-bold tabular-nums"
                   style={{
                     fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)",
-                    color: isGain ? '#34D399' : '#EF4444',
+                    color: isGain ? 'var(--color-gain)' : 'var(--color-loss)',
                   }}
                 >
                   {isGain ? '+' : '-'}${Math.abs(m.pnl).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="text-right">
-                <div className="text-[10px] tabular-nums" style={{ color: '#8B949E' }}>
+                <div className="text-[10px] tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
                   {m.tradeCount} trades
                 </div>
-                <div className="text-[10px]" style={{ color: '#6E7681' }}>
+                <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
                   {m.sessionCount} sessions
                 </div>
               </div>

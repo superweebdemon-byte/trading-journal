@@ -16,9 +16,10 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('manual')
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Reset tab when modal closes
+  // Reset tab when modal closes — intentional sync reset on prop change
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab('manual')
     }
   }, [isOpen])
@@ -103,7 +104,7 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
         aria-labelledby="add-trade-modal-heading"
         className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[560px] max-w-[90vw] max-h-[85vh] overflow-y-auto p-4"
         style={{
-          background: '#161B22',
+          background: 'var(--color-bg-tertiary)',
           border: '1px solid rgba(48,54,61,0.20)',
           borderRadius: '8px',
         }}
@@ -117,14 +118,14 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
               className="text-lg font-bold"
               style={{
                 fontFamily: 'var(--font-display), sans-serif',
-                color: '#E6EDF3',
+                color: 'var(--color-text-primary)',
               }}
             >
               Add Trade
             </h2>
             <p
               className="mt-0.5"
-              style={{ fontSize: '11px', color: '#6E7681' }}
+              style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}
             >
               Add trades manually or import from CSV
             </p>
@@ -135,12 +136,12 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
             style={{
               fontSize: '20px',
               lineHeight: '1',
-              color: '#6E7681',
+              color: 'var(--color-text-tertiary)',
               background: 'none',
               border: 'none',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#E6EDF3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#6E7681' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
             aria-label="Close"
           >
             &times;
@@ -159,9 +160,9 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
               fontWeight: isImportTab ? 600 : 500,
               padding: '6px 12px',
               borderRadius: '4px',
-              background: isImportTab ? '#00D4AA' : 'rgba(48,54,61,0.15)',
-              border: isImportTab ? '1px solid #00D4AA' : '1px solid rgba(48,54,61,0.12)',
-              color: isImportTab ? '#0D1117' : '#8B949E',
+              background: isImportTab ? 'var(--color-accent)' : 'rgba(48,54,61,0.15)',
+              border: isImportTab ? '1px solid var(--color-accent)' : '1px solid rgba(48,54,61,0.12)',
+              color: isImportTab ? 'var(--color-bg-secondary)' : 'var(--color-text-secondary)',
             }}
           >
             Import CSV
@@ -176,9 +177,9 @@ export function AddTradeModal({ isOpen, onClose }: AddTradeModalProps) {
               fontWeight: !isImportTab ? 600 : 500,
               padding: '6px 12px',
               borderRadius: '4px',
-              background: !isImportTab ? '#00D4AA' : 'rgba(48,54,61,0.15)',
-              border: !isImportTab ? '1px solid #00D4AA' : '1px solid rgba(48,54,61,0.12)',
-              color: !isImportTab ? '#0D1117' : '#8B949E',
+              background: !isImportTab ? 'var(--color-accent)' : 'rgba(48,54,61,0.15)',
+              border: !isImportTab ? '1px solid var(--color-accent)' : '1px solid rgba(48,54,61,0.12)',
+              color: !isImportTab ? 'var(--color-bg-secondary)' : 'var(--color-text-secondary)',
             }}
           >
             Manual Entry

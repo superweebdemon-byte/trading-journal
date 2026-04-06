@@ -191,11 +191,11 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
                 <div className="flex items-center gap-2">
                   <span
                     className="text-[11px] font-semibold"
-                    style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: '#E6EDF3' }}
+                    style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-primary)' }}
                   >
                     {group.label}
                   </span>
-                  <span className="text-[10px]" style={{ color: '#6E7681' }}>
+                  <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
                     &middot; {group.sessions.length} sessions &middot;{' '}
                     {group.sessions.reduce((sum, s) => sum + s.trade_count, 0)} trades
                   </span>
@@ -203,14 +203,14 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
               </div>
             ) : (
               <div className="flex items-center gap-3 pt-1 mb-1.5">
-                <div className="h-px flex-1" style={{ background: '#21262D' }} />
+                <div className="h-px flex-1" style={{ background: '#21262D' /* TODO: unmapped color — dark divider */ }} />
                 <span
                   className="text-[11px] font-semibold"
-                  style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: '#6E7681' }}
+                  style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-tertiary)' }}
                 >
                   {group.label}
                 </span>
-                <div className="h-px flex-1" style={{ background: '#21262D' }} />
+                <div className="h-px flex-1" style={{ background: '#21262D' /* TODO: unmapped color — dark divider */ }} />
               </div>
             )}
 
@@ -234,7 +234,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
           <button
             onPointerDown={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
             className="text-[11px] cursor-pointer hover:opacity-80 transition-opacity"
-            style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: '#6E7681', background: 'none', border: 'none' }}
+            style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-tertiary)', background: 'none', border: 'none' }}
           >
             Load more sessions ({remaining} remaining)
           </button>
@@ -243,7 +243,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
 
       {filteredSessions.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-[12px]" style={{ color: '#6E7681' }}>
+          <p className="text-[12px]" style={{ color: 'var(--color-text-tertiary)' }}>
             No sessions match the current filters.
           </p>
         </div>

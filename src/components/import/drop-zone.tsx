@@ -77,7 +77,7 @@ export function DropZone({ onFile, disabled }: DropZoneProps) {
         role="button"
         className="transition-all duration-200 cursor-pointer"
         style={{
-          border: `2px dashed ${isDragging ? '#00D4AA' : 'rgba(48,54,61,0.25)'}`,
+          border: `2px dashed ${isDragging ? 'var(--color-accent)' : 'rgba(48,54,61,0.25)'}`,
           borderRadius: '6px',
           padding: '16px',
           textAlign: 'center',
@@ -95,16 +95,16 @@ export function DropZone({ onFile, disabled }: DropZoneProps) {
           style={{
             fontFamily: 'var(--font-display), sans-serif',
             fontSize: '12px',
-            color: '#8B949E',
+            color: 'var(--color-text-secondary)',
           }}
         >
           {isDragging ? 'Drop your CSV file here' : 'Drag and drop your CSV file here'}
         </div>
 
-        <div style={{ fontSize: '10px', color: '#6E7681' }}>
+        <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
           or{' '}
           <span
-            style={{ color: '#00D4AA', cursor: 'pointer' }}
+            style={{ color: 'var(--color-accent)', cursor: 'pointer' }}
           >
             browse files
           </span>
@@ -122,7 +122,7 @@ export function DropZone({ onFile, disabled }: DropZoneProps) {
       />
 
       {error && (
-        <p className="mt-2" style={{ fontSize: '11px', color: '#EF4444' }}>{error}</p>
+        <p className="mt-2" style={{ fontSize: '11px', color: 'var(--color-loss)' }}>{error}</p>
       )}
     </div>
   )

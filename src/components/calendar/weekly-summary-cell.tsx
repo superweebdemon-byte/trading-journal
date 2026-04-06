@@ -30,8 +30,8 @@ export function WeeklySummaryCell({
     return (
       <div
         style={{
-          background: '#161B22',
-          border: '1px solid rgba(92,92,122,0.12)',
+          background: 'var(--color-bg-tertiary)',
+          border: '1px solid var(--color-border)',
           padding: '8px 10px',
         }}
       />
@@ -40,11 +40,11 @@ export function WeeklySummaryCell({
 
   const isGreen = totalPnl > 0
   const isRed = totalPnl < 0
-  const pnlColor = isRed ? '#EF4444' : isGreen ? '#34D399' : '#6E7681'
+  const pnlColor = isRed ? 'var(--color-loss)' : isGreen ? 'var(--color-gain)' : 'var(--color-text-tertiary)'
   const tradeLabel = `${tradeCount} ${tradeCount === 1 ? 'trade' : 'trades'}`
 
   // Background and border based on weekly P&L
-  let bg = '#161B22'
+  let bg = 'var(--color-bg-tertiary)'
   let borderLeft = '2px solid transparent'
 
   if (hasTrades) {
@@ -58,7 +58,7 @@ export function WeeklySummaryCell({
   }
 
   // Day number color
-  const dayColor = isCurrentMonth ? '#6E7681' : '#3B4048'
+  const dayColor = isCurrentMonth ? 'var(--color-text-tertiary)' : '#3B4048' /* TODO: unmapped color — very dark text */
 
   return (
     <div
@@ -66,7 +66,7 @@ export function WeeklySummaryCell({
       style={{
         background: bg,
         borderLeft,
-        border: '1px solid rgba(92,92,122,0.12)',
+        border: '1px solid var(--color-border)',
         borderLeftWidth: 2,
         borderLeftColor: hasTrades && isGreen
           ? 'rgba(52,211,153,0.3)'
@@ -93,7 +93,7 @@ export function WeeklySummaryCell({
             top: 6,
             right: 10,
             fontSize: 10,
-            color: '#6E7681',
+            color: 'var(--color-text-tertiary)',
             letterSpacing: '0.05em',
           }}
         >
@@ -112,7 +112,7 @@ export function WeeklySummaryCell({
           </span>
           <span
             className="font-mono tabular-nums"
-            style={{ fontSize: 10, color: '#6E7681', marginTop: 2 }}
+            style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 2 }}
           >
             {tradeLabel}
           </span>

@@ -14,15 +14,15 @@ export function TimeDayPanel({ timeBuckets, bestBucket, dayOfWeek, bestDay }: Ti
     <div
       className="rounded-[6px] h-full flex flex-col overflow-hidden"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
       }}
     >
       <div className="flex-1 min-h-0 overflow-hidden">
         <PnlTime timeBuckets={timeBuckets} bestBucket={bestBucket} />
       </div>
       {/* Subtle divider */}
-      <div className="flex-shrink-0 mx-4 my-1" style={{ borderTop: '1px solid rgba(92,92,122,0.15)' }} />
+      <div className="flex-shrink-0 mx-4 my-1" style={{ borderTop: '1px solid var(--color-border)' }} />
       <div className="flex-1 min-h-0 overflow-hidden">
         <PnlDay dayOfWeek={dayOfWeek} bestDay={bestDay} />
       </div>

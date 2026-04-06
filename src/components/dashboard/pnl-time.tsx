@@ -57,11 +57,11 @@ export function PnlTime({ timeBuckets, bestBucket }: PnlTimeProps) {
   return (
     <div>
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6E7681' }}>
+        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
           P&L by Time of Day
         </span>
         {bestLabel && (
-          <span style={{ fontSize: '10px', color: '#34D399', fontWeight: 600 }} className="tabular-nums">
+          <span style={{ fontSize: '10px', color: 'var(--color-gain)', fontWeight: 600 }} className="tabular-nums">
             {bestLabel} BEST
           </span>
         )}
@@ -76,11 +76,11 @@ export function PnlTime({ timeBuckets, bestBucket }: PnlTimeProps) {
             const barColor = isGain
               ? 'rgba(52,211,153,0.65)'
               : 'rgba(239,68,68,0.55)'
-            const textColor = isGain ? '#34D399' : '#EF4444'
+            const textColor = isGain ? 'var(--color-gain)' : 'var(--color-loss)'
 
             return (
               <div key={label} className="flex items-center gap-2">
-                <span className="text-right tabular-nums shrink-0" style={{ fontSize: '10px', color: '#6E7681', width: '40px' }}>
+                <span className="text-right tabular-nums shrink-0" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', width: '40px' }}>
                   {label}
                 </span>
                 <div className="flex-1 h-3.5 rounded-sm overflow-hidden" style={{ background: 'rgba(22,27,34,0.8)' }}>

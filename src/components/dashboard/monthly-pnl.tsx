@@ -42,7 +42,7 @@ function getMonthBorderStyle(pnl: number, maxAbsPnl: number): { borderColor: str
   }
 }
 
-export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: MonthlyPnlProps) {
+export function MonthlyPnl({ monthlyTrend: _monthlyTrend, monthlyPnlMap, tradeCountByMonth }: MonthlyPnlProps) {
   // Get months sorted newest first
   const months = Object.keys(monthlyPnlMap).sort().reverse()
   const maxAbsPnl = Math.max(...months.map(m => Math.abs(monthlyPnlMap[m])), 1)
@@ -76,15 +76,15 @@ export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: M
     <div
       className="rounded-[6px] h-full flex flex-col overflow-hidden"
       style={{
-        background: '#161B22',
-        border: '1px solid rgba(92,92,122,0.12)',
+        background: 'var(--color-bg-tertiary)',
+        border: '1px solid var(--color-border)',
       }}
     >
       <div className="flex-shrink-0 flex items-center justify-between px-3 pt-2 pb-1">
-        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6E7681' }}>
+        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: '10px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
           Monthly P&L
         </span>
-        <span style={{ fontSize: '10px', color: '#6E7681' }} className="tabular-nums">
+        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }} className="tabular-nums">
           {dateRange}
         </span>
       </div>
@@ -97,7 +97,7 @@ export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: M
             const isGain = pnl >= 0
             // Highlight best month label color
             const isBest = month === bestMonth
-            const labelColor = isBest && isGain ? '#6EE7B7' : '#6E7681'
+            const labelColor = isBest && isGain ? 'var(--color-gain-bright)' : 'var(--color-text-tertiary)'
 
             return (
               <div
@@ -119,7 +119,7 @@ export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: M
                     style={{
                       fontSize: '13px',
                       fontWeight: 700,
-                      color: isGain ? '#34D399' : '#EF4444',
+                      color: isGain ? 'var(--color-gain)' : 'var(--color-loss)',
                       fontFamily: "'Space Grotesk', sans-serif",
                     }}
                   >
@@ -127,10 +127,10 @@ export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: M
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="tabular-nums" style={{ fontSize: '10px', color: '#8B949E', fontWeight: 500 }}>
+                  <div className="tabular-nums" style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
                     {count}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#6E7681' }}>trades</div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>trades</div>
                 </div>
               </div>
             )
@@ -138,11 +138,11 @@ export function MonthlyPnl({ monthlyTrend, monthlyPnlMap, tradeCountByMonth }: M
         </div>
         {/* Summary line */}
         <div className="flex-shrink-0 flex items-center justify-between pt-1 mt-0.5 px-0.5">
-          <span style={{ fontSize: '10px', color: '#6E7681' }}>
-            Best: <span style={{ color: '#34D399', fontWeight: 600 }}>{bestMonthShort}</span>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
+            Best: <span style={{ color: 'var(--color-gain)', fontWeight: 600 }}>{bestMonthShort}</span>
           </span>
-          <span style={{ fontSize: '10px', color: '#6E7681' }} className="tabular-nums">
-            Avg: <span style={{ color: '#8B949E', fontWeight: 600 }}>{formatPnl(Math.round(avgPnl))}</span>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }} className="tabular-nums">
+            Avg: <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>{formatPnl(Math.round(avgPnl))}</span>
           </span>
         </div>
       </div>

@@ -44,7 +44,7 @@ function contractBadge(symbol: string) {
       className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm uppercase tracking-wide"
       style={{
         background: isMNQ ? 'rgba(0,212,170,0.15)' : 'rgba(48,54,61,0.15)',
-        color: isMNQ ? '#00D4AA' : '#8B949E',
+        color: isMNQ ? 'var(--color-accent)' : 'var(--color-text-secondary)',
         letterSpacing: '0.06em',
       }}
     >
@@ -55,7 +55,7 @@ function contractBadge(symbol: string) {
 
 export function TradeRowHeader() {
   return (
-    <tr className="text-[10px] uppercase tracking-wider" style={{ color: '#6E7681' }}>
+    <tr className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
       <th className="text-left font-medium px-2 py-1">Time</th>
       <th className="text-left font-medium px-2 py-1">Contract</th>
       <th className="text-center font-medium px-2 py-1">Side</th>
@@ -74,30 +74,30 @@ export function TradeRow({ trade }: TradeRowProps) {
 
   return (
     <tr style={{ borderTop: '1px solid rgba(22,27,34,0.5)' }}>
-      <td className="px-2 py-1.5 tabular-nums text-[10px]" style={{ color: '#E6EDF3' }}>
+      <td className="px-2 py-1.5 tabular-nums text-[10px]" style={{ color: 'var(--color-text-primary)' }}>
         {formatTime(trade.entered_at)}
       </td>
       <td className="px-2 py-1.5 text-[10px]">
         {contractBadge(trade.contract_symbol)}
       </td>
       <td className="px-2 py-1.5 text-center text-[10px]">
-        <span style={{ color: isLong ? '#34D399' : '#EF4444' }}>
+        <span style={{ color: isLong ? 'var(--color-gain)' : 'var(--color-loss)' }}>
           {trade.trade_type}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: '#8B949E' }}>
+      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: 'var(--color-text-secondary)' }}>
         {formatPrice(trade.entry_price)}
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: '#8B949E' }}>
+      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: 'var(--color-text-secondary)' }}>
         {formatPrice(trade.exit_price)}
       </td>
       <td
         className="px-2 py-1.5 text-right tabular-nums font-medium text-[10px]"
-        style={{ color: isGain ? '#34D399' : '#EF4444' }}
+        style={{ color: isGain ? 'var(--color-gain)' : 'var(--color-loss)' }}
       >
         {formatPnl(trade.pnl)}
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: '#6E7681' }}>
+      <td className="px-2 py-1.5 text-right tabular-nums text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
         {formatDuration(trade.trade_duration)}
       </td>
     </tr>

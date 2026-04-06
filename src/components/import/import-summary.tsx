@@ -47,7 +47,7 @@ export function ImportSummary({ newCount, dupCount, trades }: ImportSummaryProps
           style={{
             fontFamily: 'var(--font-display), sans-serif',
             fontSize: '10px',
-            color: '#8B949E',
+            color: 'var(--color-text-secondary)',
             letterSpacing: '0.14em',
           }}
         >
@@ -55,39 +55,39 @@ export function ImportSummary({ newCount, dupCount, trades }: ImportSummaryProps
         </div>
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: '10px', color: '#6E7681' }}>New trades</span>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>New trades</span>
             <span
               className="tabular-nums font-bold"
               style={{
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '12px',
-                color: '#34D399',
+                color: 'var(--color-gain)',
               }}
             >
               {newCount}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: '10px', color: '#6E7681' }}>Duplicates</span>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Duplicates</span>
             <span
               className="tabular-nums font-bold"
               style={{
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '12px',
-                color: '#6E7681',
+                color: 'var(--color-text-tertiary)',
               }}
             >
               {dupCount}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: '10px', color: '#6E7681' }}>Sessions</span>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Sessions</span>
             <span
               className="tabular-nums font-bold"
               style={{
                 fontFamily: 'var(--font-display), sans-serif',
                 fontSize: '12px',
-                color: '#E6EDF3',
+                color: 'var(--color-text-primary)',
               }}
             >
               {sessionCount}
@@ -95,13 +95,13 @@ export function ImportSummary({ newCount, dupCount, trades }: ImportSummaryProps
           </div>
           {dateRange && (
             <div className="flex items-center gap-1.5">
-              <span style={{ fontSize: '10px', color: '#6E7681' }}>Range</span>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Range</span>
               <span
                 className="tabular-nums font-medium"
                 style={{
                   fontFamily: 'var(--font-display), sans-serif',
                   fontSize: '10px',
-                  color: '#8B949E',
+                  color: 'var(--color-text-secondary)',
                 }}
               >
                 {dateRange}

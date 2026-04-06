@@ -33,9 +33,10 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
   const [parseErrors, setParseErrors] = useState<string[]>([])
   const [historyKey, setHistoryKey] = useState(0)
 
-  // Reset state when hidden
+  // Reset state when hidden — intentional sync reset on prop change
   useEffect(() => {
     if (!isVisible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep('upload')
       setFilename('')
       setTotalRows(0)
@@ -136,7 +137,7 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
           {parseErrors.length > 0 && (
             <div className="mt-2 space-y-1">
               {parseErrors.map((err, i) => (
-                <p key={i} style={{ fontSize: '11px', color: '#EF4444' }}>{err}</p>
+                <p key={i} style={{ fontSize: '11px', color: 'var(--color-loss)' }}>{err}</p>
               ))}
             </div>
           )}
@@ -167,7 +168,7 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
               style={{
                 background: 'rgba(22,27,34,0.8)',
                 border: '1px solid rgba(48,54,61,0.15)',
-                color: '#8B949E',
+                color: 'var(--color-text-secondary)',
                 padding: '6px 16px',
                 borderRadius: '4px',
                 fontSize: '11px',
@@ -175,11 +176,11 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
                 fontFamily: 'var(--font-display), sans-serif',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#E6EDF3'
+                e.currentTarget.style.color = 'var(--color-text-primary)'
                 e.currentTarget.style.borderColor = 'rgba(48,54,61,0.30)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#8B949E'
+                e.currentTarget.style.color = 'var(--color-text-secondary)'
                 e.currentTarget.style.borderColor = 'rgba(48,54,61,0.15)'
               }}
             >
@@ -190,9 +191,9 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
               disabled={step === 'importing' || newTrades.length === 0}
               className="cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: '#00D4AA',
-                border: '1px solid #00D4AA',
-                color: '#0D1117',
+                background: 'var(--color-accent)',
+                border: '1px solid var(--color-accent)',
+                color: 'var(--color-bg-secondary)',
                 padding: '6px 16px',
                 borderRadius: '4px',
                 fontSize: '11px',
@@ -200,12 +201,12 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
                 fontFamily: 'var(--font-display), sans-serif',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#33DDBB'
-                e.currentTarget.style.borderColor = '#33DDBB'
+                e.currentTarget.style.background = 'var(--color-accent-bright)'
+                e.currentTarget.style.borderColor = 'var(--color-accent-bright)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#00D4AA'
-                e.currentTarget.style.borderColor = '#00D4AA'
+                e.currentTarget.style.background = 'var(--color-accent)'
+                e.currentTarget.style.borderColor = 'var(--color-accent)'
               }}
             >
               <span className="flex items-center gap-1.5">
@@ -221,7 +222,7 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
 
       {/* Success state */}
       {step === 'success' && (
-        <div className="flex items-center gap-2 mb-3 py-3" style={{ fontSize: '12px', color: '#34D399' }}>
+        <div className="flex items-center gap-2 mb-3 py-3" style={{ fontSize: '12px', color: 'var(--color-gain)' }}>
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
@@ -232,9 +233,9 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
       {/* Error state */}
       {step === 'error' && (
         <div className="mb-3 space-y-2">
-          <p style={{ fontSize: '12px', color: '#EF4444' }}>Import failed</p>
+          <p style={{ fontSize: '12px', color: 'var(--color-loss)' }}>Import failed</p>
           {parseErrors.map((err, i) => (
-            <p key={i} style={{ fontSize: '11px', color: '#EF4444' }}>{err}</p>
+            <p key={i} style={{ fontSize: '11px', color: 'var(--color-loss)' }}>{err}</p>
           ))}
           <button
             onPointerDown={handleCancel}
@@ -242,7 +243,7 @@ export function ImportContent({ isVisible, onClose }: ImportContentProps) {
             style={{
               background: 'rgba(22,27,34,0.8)',
               border: '1px solid rgba(48,54,61,0.15)',
-              color: '#8B949E',
+              color: 'var(--color-text-secondary)',
               padding: '6px 16px',
               borderRadius: '4px',
               fontSize: '11px',

@@ -25,7 +25,7 @@ export function FilterBar({ activeFilters, onToggle }: FilterBarProps) {
     <div className="flex items-center gap-1.5 mb-2 flex-wrap">
       <span
         className="text-[10px] font-semibold mr-1"
-        style={{ color: '#6E7681', fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)" }}
+        style={{ color: 'var(--color-text-tertiary)', fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)" }}
       >
         Filters:
       </span>
@@ -39,7 +39,7 @@ export function FilterBar({ activeFilters, onToggle }: FilterBarProps) {
             style={{
               fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)",
               background: isActive ? 'rgba(0,212,170,0.15)' : 'rgba(22,27,34,0.8)',
-              color: isActive ? '#00D4AA' : '#6E7681',
+              color: isActive ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
               border: isActive
                 ? '1px solid rgba(0,212,170,0.25)'
                 : '1px solid rgba(48,54,61,0.15)',

@@ -30,7 +30,7 @@ export function Nav({
       className="flex flex-wrap items-center justify-between px-5 py-2.5 border-b gap-2"
       style={{
         background: 'rgba(13,17,23,0.95)',
-        borderColor: 'rgba(92,92,122,0.12)',
+        borderColor: 'var(--color-border)',
       }}
     >
       <div className="flex items-center gap-5">
@@ -38,13 +38,13 @@ export function Nav({
         <div className="flex items-center gap-2">
           <div
             className="w-2 h-2 rounded-full"
-            style={{ background: '#00D4AA' }}
+            style={{ background: 'var(--color-accent)' }}
           />
           <span
             className="font-bold text-sm tracking-tight"
             style={{
               fontFamily: 'var(--font-display), sans-serif',
-              color: '#E6EDF3',
+              color: 'var(--color-text-primary)',
             }}
           >
             TradeLog
@@ -61,7 +61,7 @@ export function Nav({
                 href={tab.href}
                 className="text-xs tracking-wide transition-colors duration-150"
                 style={{
-                  color: isActive ? '#E6EDF3' : '#6E7681',
+                  color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
                   background: isActive ? 'rgba(0,212,170,0.12)' : 'transparent',
                   padding: isActive ? '4px 10px' : '4px 10px',
                   borderRadius: '4px',
@@ -71,12 +71,12 @@ export function Nav({
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = '#8B949E'
+                    e.currentTarget.style.color = 'var(--color-text-secondary)'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = '#6E7681'
+                    e.currentTarget.style.color = 'var(--color-text-tertiary)'
                   }
                 }}
               >
@@ -89,13 +89,13 @@ export function Nav({
 
       {/* Right side: context + import button */}
       <div className="flex items-center gap-3">
-        <div className="hidden md:flex items-center gap-3 tabular-nums" style={{ fontSize: '11px', color: '#6E7681' }}>
+        <div className="hidden md:flex items-center gap-3 tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
           <span>{platform}</span>
-          <span style={{ color: '#2D333B' }}>|</span>
+          <span style={{ color: '#2D333B' /* TODO: unmapped color — dark divider */ }}>|</span>
           <span>{tradeCount} trades</span>
           {dateRange && (
             <>
-              <span style={{ color: '#2D333B' }}>|</span>
+              <span style={{ color: '#2D333B' /* TODO: unmapped color — dark divider */ }}>|</span>
               <span>{dateRange}</span>
             </>
           )}
@@ -107,9 +107,9 @@ export function Nav({
             fontFamily: 'var(--font-display), sans-serif',
             fontSize: '11px',
             padding: '6px 12px',
-            background: '#00D4AA',
-            border: '1px solid #00D4AA',
-            color: '#0D1117',
+            background: 'var(--color-accent)',
+            border: '1px solid var(--color-accent)',
+            color: 'var(--color-bg-secondary)',
           }}
         >
           + Add Trade
