@@ -178,7 +178,7 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
   }, [allVisibleSessions, groupedByMonth])
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <FilterBar activeFilters={activeFilters} onToggle={handleFilterToggle} />
       <MonthSummary months={monthData} selectedMonth={selectedMonth} onSelect={handleMonthSelect} />
 

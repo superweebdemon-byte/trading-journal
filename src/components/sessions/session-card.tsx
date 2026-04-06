@@ -167,18 +167,20 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
       {/* Expanded trade table */}
       {isExpanded && (
         <div className="px-3 py-1.5" style={{ background: 'rgba(22,27,34,0.5)', borderTop: '1px solid rgba(48,54,61,0.10)' }}>
-          <table className="w-full text-[10px]">
-            <thead>
-              <TradeRowHeader />
-            </thead>
-            <tbody>
-              {session.trades
-                .sort((a, b) => a.entered_at.localeCompare(b.entered_at))
-                .map((trade) => (
-                  <TradeRow key={trade.id} trade={trade} />
-                ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[10px]">
+              <thead>
+                <TradeRowHeader />
+              </thead>
+              <tbody>
+                {session.trades
+                  .sort((a, b) => a.entered_at.localeCompare(b.entered_at))
+                  .map((trade) => (
+                    <TradeRow key={trade.id} trade={trade} />
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
