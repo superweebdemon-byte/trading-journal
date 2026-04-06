@@ -82,7 +82,7 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
       }}
     >
       <div
-        className="px-4 py-2.5 flex items-center justify-between"
+        className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0"
         onClick={onToggle}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() } }}
         role="button"
@@ -119,7 +119,7 @@ export function SessionCard({ session, isExpanded, onToggle }: SessionCardProps)
         </div>
 
         {/* Right side: stats + chevron */}
-        <div className="flex items-center gap-6 text-[11px]">
+        <div className="flex items-center gap-3 sm:gap-6 text-[11px] flex-wrap">
           <div className="text-center">
             <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Trades</div>
             <div className="font-bold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{session.trade_count}</div>
