@@ -34,6 +34,11 @@ function applyThemeVars(config: ThemeConfig) {
   root.style.setProperty('--color-loss-bright', colors.lossBright)
   root.style.setProperty('--color-loss-bg', colors.lossBg)
   root.style.setProperty('--color-neutral', colors.neutral)
+  root.style.setProperty('--color-warning', colors.warning)
+  root.style.setProperty('--color-warning-bright', colors.warningBright)
+  root.style.setProperty('--color-warning-bg', colors.warningBg)
+  root.style.setProperty('--color-border-subtle', colors.borderSubtle)
+  root.style.setProperty('--color-text-quaternary', colors.textQuaternary)
 
   root.style.setProperty('--font-display', typography.fontDisplay)
   root.style.setProperty('--font-body', typography.fontBody)
@@ -59,16 +64,15 @@ function loadGoogleFonts(url: string) {
   document.head.appendChild(link)
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeName, setThemeName] = useState(defaultTheme)
-  const theme = themes[themeName] ?? themes[defaultTheme]
+function getSavedTheme(): string {
+  if (typeof window === 'undefined') return defaultTheme
+  const saved = localStorage.getItem('trading-journal-theme')
+  return saved && themes[saved] ? saved : defaultTheme
+}
 
-  useEffect(() => {
-    const saved = localStorage.getItem('trading-journal-theme')
-    if (saved && themes[saved]) {
-      setThemeName(saved)
-    }
-  }, [])
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [themeName, setThemeName] = useState(getSavedTheme)
+  const theme = themes[themeName] ?? themes[defaultTheme]
 
   useEffect(() => {
     applyThemeVars(theme)

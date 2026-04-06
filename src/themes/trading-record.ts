@@ -27,6 +27,11 @@ export const tradingRecord: ThemeConfig = {
     lossBright: '#f87171',
     lossBg: 'rgba(139, 0, 0, 0.06)',
     neutral: '#6b6356',
+    warning: '#D97706',
+    warningBright: '#F59E0B',
+    warningBg: 'rgba(217, 119, 6, 0.08)',
+    borderSubtle: 'rgba(0, 0, 0, 0.05)',
+    textQuaternary: '#A39882',
   },
   typography: {
     fontDisplay: 'Playfair Display',

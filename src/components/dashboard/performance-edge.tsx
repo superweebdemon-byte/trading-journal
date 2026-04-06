@@ -13,22 +13,22 @@ function formatDollar(value: number): string {
 function getRecoveryColor(rating: PerformanceEdgeKpis['recoveryRating']): string {
   if (rating === 'EXCELLENT') return 'var(--color-gain)'
   if (rating === 'GOOD') return 'var(--color-gain)'
-  if (rating === 'MODERATE') return '#FFD600' /* TODO: unmapped color — yellow/warning */
+  if (rating === 'MODERATE') return 'var(--color-warning)'
   return 'var(--color-loss)'
 }
 
 function getRecoveryBg(rating: PerformanceEdgeKpis['recoveryRating']): string {
   if (rating === 'EXCELLENT') return 'var(--color-gain-bg)'
   if (rating === 'GOOD') return 'var(--color-gain-bg)'
-  if (rating === 'MODERATE') return 'rgba(255,214,0,0.10)' /* TODO: unmapped color — yellow/warning bg */
+  if (rating === 'MODERATE') return 'var(--color-warning-bg)'
   return 'var(--color-loss-bg)'
 }
 
 function getRecoveryBorder(rating: PerformanceEdgeKpis['recoveryRating']): string {
-  if (rating === 'EXCELLENT') return 'rgba(52,211,153,0.15)' /* TODO: needs opacity variant */
-  if (rating === 'GOOD') return 'rgba(52,211,153,0.15)' /* TODO: needs opacity variant */
-  if (rating === 'MODERATE') return 'rgba(255,214,0,0.15)' /* TODO: unmapped color — yellow/warning border */
-  return 'rgba(239,68,68,0.15)' /* TODO: needs opacity variant */
+  if (rating === 'EXCELLENT') return 'var(--color-gain-bg)'
+  if (rating === 'GOOD') return 'var(--color-gain-bg)'
+  if (rating === 'MODERATE') return 'var(--color-warning-bg)'
+  return 'var(--color-loss-bg)'
 }
 
 export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
@@ -264,7 +264,7 @@ export function PerformanceEdge({ edge }: PerformanceEdgeProps) {
             <div className="flex items-center gap-1.5 mt-1.5">
               <div
                 className="flex-1 overflow-hidden rounded-full"
-                style={{ height: '4px', background: 'rgba(92,92,122,0.08)' /* TODO: needs opacity variant of --color-border */ }}
+                style={{ height: '4px', background: 'var(--color-border-subtle)' }}
               >
                 <div
                   className="h-full rounded-full"

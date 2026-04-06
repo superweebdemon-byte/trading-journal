@@ -91,11 +91,11 @@ export function Nav({
       <div className="flex items-center gap-3">
         <div className="hidden md:flex items-center gap-3 tabular-nums" style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
           <span>{platform}</span>
-          <span style={{ color: '#2D333B' /* TODO: unmapped color — dark divider */ }}>|</span>
+          <span style={{ color: 'var(--color-text-quaternary)' }}>|</span>
           <span>{tradeCount} trades</span>
           {dateRange && (
             <>
-              <span style={{ color: '#2D333B' /* TODO: unmapped color — dark divider */ }}>|</span>
+              <span style={{ color: 'var(--color-text-quaternary)' }}>|</span>
               <span>{dateRange}</span>
             </>
           )}

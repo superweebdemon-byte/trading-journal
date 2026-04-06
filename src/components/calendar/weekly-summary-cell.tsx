@@ -58,7 +58,7 @@ export function WeeklySummaryCell({
   }
 
   // Day number color
-  const dayColor = isCurrentMonth ? 'var(--color-text-tertiary)' : '#3B4048' /* TODO: unmapped color — very dark text */
+  const dayColor = isCurrentMonth ? 'var(--color-text-tertiary)' : 'var(--color-text-quaternary)'
 
   return (
     <div

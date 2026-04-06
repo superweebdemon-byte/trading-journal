@@ -203,14 +203,14 @@ export function SessionsClient({ sessions, initialDate }: SessionsClientProps) {
               </div>
             ) : (
               <div className="flex items-center gap-3 pt-1 mb-1.5">
-                <div className="h-px flex-1" style={{ background: '#21262D' /* TODO: unmapped color — dark divider */ }} />
+                <div className="h-px flex-1" style={{ background: 'var(--color-text-quaternary)' }} />
                 <span
                   className="text-[11px] font-semibold"
                   style={{ fontFamily: "var(--font-display, 'Space Grotesk', sans-serif)", color: 'var(--color-text-tertiary)' }}
                 >
                   {group.label}
                 </span>
-                <div className="h-px flex-1" style={{ background: '#21262D' /* TODO: unmapped color — dark divider */ }} />
+                <div className="h-px flex-1" style={{ background: 'var(--color-text-quaternary)' }} />
               </div>
             )}
 

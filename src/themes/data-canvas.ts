@@ -22,6 +22,11 @@ export const dataCanvas: ThemeConfig = {
     lossBright: '#FCA5A5',
     lossBg: 'rgba(248, 113, 113, 0.08)',
     neutral: '#94A3B8',
+    warning: '#FFD600',
+    warningBright: '#FFEA00',
+    warningBg: 'rgba(255, 214, 0, 0.10)',
+    borderSubtle: 'rgba(92, 92, 122, 0.06)',
+    textQuaternary: '#2D333B',
   },
   typography: {
     fontDisplay: 'Sora',

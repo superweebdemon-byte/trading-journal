@@ -17,6 +17,11 @@ export interface ThemeColors {
   lossBright: string
   lossBg: string
   neutral: string
+  warning: string
+  warningBright: string
+  warningBg: string
+  borderSubtle: string
+  textQuaternary: string
 }
 
 export interface ThemeTypography {

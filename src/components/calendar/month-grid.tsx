@@ -114,7 +114,7 @@ export function MonthGrid({ year, month, sessionsByDay }: MonthGridProps) {
     <div
       className=""
       style={{
-        background: 'rgba(92,92,122,0.06)' /* TODO: needs opacity variant of --color-border */,
+        background: 'var(--color-border-subtle)',
         border: '1px solid var(--color-border)',
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr) 140px',

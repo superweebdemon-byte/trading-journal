@@ -48,6 +48,11 @@ export const splitCockpit: ThemeConfig = {
     lossBright: '#F87171',
     lossBg: 'rgba(239, 68, 68, 0.12)',
     neutral: '#8B95A8',
+    warning: '#FFD600',
+    warningBright: '#FFEA00',
+    warningBg: 'rgba(255, 214, 0, 0.10)',
+    borderSubtle: 'rgba(255, 255, 255, 0.03)',
+    textQuaternary: '#1A1F28',
   },
   typography: {
     fontDisplay: 'Sora',

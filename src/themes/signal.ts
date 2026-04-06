@@ -27,6 +27,11 @@ export const signal: ThemeConfig = {
     lossBright: '#D4D4D8',
     lossBg: '#27272A',
     neutral: '#52525B',
+    warning: '#FFD600',
+    warningBright: '#FFEA00',
+    warningBg: 'rgba(255, 214, 0, 0.10)',
+    borderSubtle: 'rgba(255, 255, 255, 0.04)',
+    textQuaternary: '#27272A',
   },
   typography: {
     fontDisplay: 'Inter',

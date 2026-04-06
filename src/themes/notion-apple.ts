@@ -27,6 +27,11 @@ export const notionApple: ThemeConfig = {
     lossBright: '#EF4444',
     lossBg: '#FEF2F2',
     neutral: '#78716C',
+    warning: '#D97706',
+    warningBright: '#F59E0B',
+    warningBg: 'rgba(217, 119, 6, 0.08)',
+    borderSubtle: 'rgba(0, 0, 0, 0.04)',
+    textQuaternary: '#A8A29E',
   },
   typography: {
     fontDisplay: 'Calistoga',
