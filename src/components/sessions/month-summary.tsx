@@ -20,10 +20,8 @@ export function MonthSummary({ months, selectedMonth, onSelect }: MonthSummaryPr
   if (months.length === 0) return null
 
   return (
-    <div className="overflow-x-auto max-w-full mb-2">
     <div
-      className="grid gap-1.5"
-      style={{ gridTemplateColumns: `repeat(${Math.min(months.length, 6)}, minmax(100px, 1fr))`, minWidth: 'max-content', width: '100%' }}
+      className="grid grid-cols-2 sm:grid-cols-3 md:flex md:items-center md:flex-wrap gap-2 mb-2 overflow-hidden"
     >
       {months.map((m) => {
         const isGain = m.pnl >= 0
@@ -74,7 +72,6 @@ export function MonthSummary({ months, selectedMonth, onSelect }: MonthSummaryPr
           </button>
         )
       })}
-    </div>
     </div>
   )
 }
